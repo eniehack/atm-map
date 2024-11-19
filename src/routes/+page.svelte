@@ -8,8 +8,6 @@
 		CircleLayer,
 		SymbolLayer
 	} from 'svelte-maplibre-gl';
-	import Atm from './atm.json';
-	import Convenience from './convenience.json';
 	import { osm } from './style';
 
 	const atm = Atm as any;
@@ -19,8 +17,7 @@
 <MapLibre class="h-[60vh] min-h-[300px]" style={osm} zoom={4} center={{ lng: 137, lat: 36 }}>
 	<NavigationControl />
 	<ScaleControl />
-	<GlobeControl />
-	<GeoJSONSource data={atm} cluster={true}>
+	<GeoJSONSource data={"./atm.json"} cluster={true}>
 		<CircleLayer
 			paint={{
 				'circle-color': '#FFC300',
@@ -41,7 +38,7 @@
 			}}
 		/>
 	</GeoJSONSource>
-	<GeoJSONSource data={convenience} cluster={true}>
+	<GeoJSONSource data={"./convenience.json"} cluster={true}>
 		<CircleLayer
 			paint={{
 				'circle-color': 'green',
