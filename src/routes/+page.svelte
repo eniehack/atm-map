@@ -9,6 +9,10 @@
 		Popup
 	} from 'svelte-maplibre-gl';
 	import { osm } from './style';
+	import { base } from "$app/paths";
+	import Fuse from "fuse.js";
+	import type {FuseResult} from "fuse.js";
+	import { onMount } from 'svelte';
 
 	type PopupArgument = {
 		lng: number,
@@ -36,12 +40,111 @@
 	]
 	let convenienceSelectedBrand = $state();
 	let popup = $state<null | PopupArgument>(null);
+
+	type LatLng = [number, number];
+	type Index = {
+		brand: string | null,
+		opening_hours: string | null,
+		name: string | null,
+		geom: LatLng
+	}
+	type GeoJSON = {
+		"type": string,
+		name: string,
+		crs: object,
+		features: {
+			"type": string,
+			properties: {
+				brand: string | null,
+				opening_hours: string | null,
+				name: string | null,
+			},
+			geometry: {
+				"type": string,
+				coordinates: [number, number]
+			}
+		}[]
+	}
+	let atmIndex = $state<Fuse<Index>>();
+	let convenienceIndex = $state<Fuse<Index>>();
+	let query = $state<string>();
+
+	const fetchAtmData = async () => {
+		const resp = await fetch(`${base}/atm.json`);
+		const json = await resp.json() as GeoJSON
+		const index = [] as Index[];
+		json.features.forEach(feature => {
+			index.push({
+				brand: feature.properties.brand,
+				opening_hours: feature.properties.opening_hours,
+				name: feature.properties.name,
+				geom: feature.geometry.coordinates,
+			} as Index)
+		});
+		atmIndex = new Fuse(index, {keys: ["brand", "name"]})
+	}
+
+	const fetchConvenienceData = async () => {
+		const resp = await fetch(`${base}/convenience.json`);
+		const json = await resp.json() as GeoJSON
+		const index = [] as Index[];
+		json.features.forEach(feature => {
+			index.push({
+				brand: feature.properties.brand,
+				opening_hours: feature.properties.opening_hours,
+				name: feature.properties.name,
+				geom: feature.geometry.coordinates,
+			} as Index)
+		});
+		convenienceIndex = new Fuse(index, {keys: ["brand", "name"]})
+	}
+
+	const createGeoJsonFromIndex = (result: FuseResult<Index>[]): GeoJSON => {
+		let root = {
+			"type": "FeatureCollection",
+			"name": "searchResults",
+			"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+			"features": []
+		} as GeoJSON;
+		result.forEach(elem => {
+			root.features.push({
+				"type": "Feature",
+				properties: {
+					brand: elem.item.brand,
+					opening_hours: elem.item.opening_hours,
+					name: elem.item.name,
+				},
+				geometry: {
+					"type": "Point",
+					coordinates: elem.item.geom
+				}
+			})
+		});
+		return root
+	}
+
+	let filteredAtmData = $derived.by(() => {
+		if (typeof query === "undefined" || query === "") return createGeoJsonFromIndex([])
+		if (typeof atmIndex === "undefined") return createGeoJsonFromIndex([])
+		const result = atmIndex.search(query)
+		return createGeoJsonFromIndex(result)
+	})
+	let filteredConvenienceData = $derived.by(() => {
+		if (typeof query === "undefined" || query === "") return createGeoJsonFromIndex([])
+		if (typeof convenienceIndex === "undefined") return createGeoJsonFromIndex([])
+		const result = convenienceIndex.search(query)
+		return createGeoJsonFromIndex(result)
+	})
+	onMount(() => {
+		fetchAtmData();
+		fetchConvenienceData();
+	})
 </script>
 
-<MapLibre class="h-[60vh] min-h-[300px]" style={osm} zoom={4} center={{ lng: 137, lat: 36 }}>
+<MapLibre class="h-[60vh] min-h-[300px]" style={osm} zoom={4} center={{ lng: 141.350331, lat: 43.068643 }}>
 	<NavigationControl />
 	<ScaleControl />
-	<GeoJSONSource data={"./atm.json"} cluster={true}>
+	<GeoJSONSource data={filteredAtmData as any}>
 		<CircleLayer
 			paint={{
 				'circle-color': '#FFC300',
@@ -59,7 +162,7 @@
 		/>
 		<SymbolLayer
 			layout={{
-				'text-field': '{brand}',
+				'text-field': ["format", ["coalesce", ["get", "brand"], ["get", "name"]]],
 				'text-font': ['Open Sans Bold'],
 				'text-offset': [0, 1]
 			}}
@@ -69,7 +172,7 @@
 			}}
 		/>
 	</GeoJSONSource>
-	<GeoJSONSource data={"./convenience.json"} cluster={true}>
+	<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 		{#if convenienceSelectedBrand == "lawson"}
 		<SymbolLayer
 			layout={{
@@ -169,3 +272,5 @@
 		<option value={brand.name}>{brand.displayName[0]}</option>
 	{/each}
 </select>
+
+<input type="text" id="q" bind:value={query} />

@@ -38,6 +38,9 @@ importers:
       eslint-plugin-svelte:
         specifier: ^2.36.0
         version: 2.46.0(eslint@9.15.0(jiti@1.21.6))(svelte@5.2.3)
+      fuse.js:
+        specifier: ^7.0.0
+        version: 7.0.0
       globals:
         specifier: ^15.0.0
         version: 15.12.0
@@ -953,6 +956,10 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
+
+  fuse.js@7.0.0:
+    resolution: {integrity: sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==}
+    engines: {node: '>=10'}
 
   geojson-vt@4.0.2:
     resolution: {integrity: sha512-AV9ROqlNqoZEIJGfm1ncNjEXfkz2hdFlZf0qkVfmkwdKa8vj7H16YUOT81rJw1rdFhyEDlN2Tds91p/glzbl5A==}
@@ -2559,6 +2566,8 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
+
+  fuse.js@7.0.0: {}
 
   geojson-vt@4.0.2: {}
 
