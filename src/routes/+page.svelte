@@ -9,62 +9,62 @@
 		Popup
 	} from 'svelte-maplibre-gl';
 	import { osm } from './style';
-	import { base } from "$app/paths";
-	import Fuse from "fuse.js";
-	import type {FuseResult} from "fuse.js";
+	import { base } from '$app/paths';
+	import Fuse from 'fuse.js';
+	import type { FuseResult } from 'fuse.js';
 	import { onMount } from 'svelte';
 
 	type PopupArgument = {
-		lng: number,
-		lat: number,
-		content: string,
-	}
+		lng: number;
+		lat: number;
+		content: string;
+	};
 
 	const brands = [
 		{
-			name: "seven",
-			displayName: ["セブン-イレブン"],
+			name: 'seven',
+			displayName: ['セブン-イレブン']
 		},
 		{
-			name: "lawson",
-			displayName: ["ローソン", "LAWSON"],
+			name: 'lawson',
+			displayName: ['ローソン', 'LAWSON']
 		},
 		{
-			name: "familymart",
-			displayName: ["ファミリーマート", "FamilyMart"],
+			name: 'familymart',
+			displayName: ['ファミリーマート', 'FamilyMart']
 		},
 		{
-			name: "seicomart",
-			displayName: ["セイコーマート", "Seicomart"],
-		},
-	]
+			name: 'seicomart',
+			displayName: ['セイコーマート', 'Seicomart']
+		}
+	];
 	let convenienceSelectedBrand = $state();
 	let popup = $state<null | PopupArgument>(null);
 
 	type LatLng = [number, number];
 	type Index = {
-		brand: string | null,
-		opening_hours: string | null,
-		name: string | null,
-		geom: LatLng
-	}
+		brand: string | null;
+		opening_hours: string | null;
+		name: string | null;
+		geom: LatLng;
+	};
 	type GeoJSON = {
-		"type": string,
-		name: string,
-		crs: object,
+		type: string;
+		name: string;
+		crs: object;
 		features: {
-			"type": string,
+			type: string;
 			properties: {
-				brand: string | null,
-				opening_hours: string | null,
-				name: string | null,
-			},
+				brand: string | null;
+				opening_hours: string | null;
+				name: string | null;
+			};
 			geometry: {
-				"type": string,
-				coordinates: [number, number]
-			}
-		}[]
-	}
+				type: string;
+				coordinates: [number, number];
+			};
+		}[];
+	};
 	let atmIndex = $state<Fuse<Index>>();
 	let atm = $state<GeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
@@ -73,85 +73,93 @@
 
 	const fetchAtmData = async () => {
 		const resp = await fetch(`${base}/atm.json`);
-		const json = await resp.json() as GeoJSON
-		atm = json
+		const json = (await resp.json()) as GeoJSON;
+		atm = json;
 		const index = [] as Index[];
-		json.features.forEach(feature => {
+		json.features.forEach((feature) => {
 			index.push({
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
-				geom: feature.geometry.coordinates,
-			} as Index)
+				geom: feature.geometry.coordinates
+			} as Index);
 		});
-		atmIndex = new Fuse(index, {keys: ["brand", "name"]})
-	}
+		atmIndex = new Fuse(index, { keys: ['brand', 'name'] });
+	};
 
 	const fetchConvenienceData = async () => {
 		const resp = await fetch(`${base}/convenience.json`);
-		const json = await resp.json() as GeoJSON
-		convenience = json
+		const json = (await resp.json()) as GeoJSON;
+		convenience = json;
 		const index = [] as Index[];
-		json.features.forEach(feature => {
+		json.features.forEach((feature) => {
 			index.push({
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
-				geom: feature.geometry.coordinates,
-			} as Index)
+				geom: feature.geometry.coordinates
+			} as Index);
 		});
-		convenienceIndex = new Fuse(index, {keys: ["brand", "name"]})
-	}
+		convenienceIndex = new Fuse(index, { keys: ['brand', 'name'] });
+	};
 
 	const createGeoJsonFromIndex = (result: FuseResult<Index>[]): GeoJSON => {
 		let root = {
-			"type": "FeatureCollection",
-			"name": "searchResults",
-			"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-			"features": []
+			type: 'FeatureCollection',
+			name: 'searchResults',
+			crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+			features: []
 		} as GeoJSON;
-		result.forEach(elem => {
+		result.forEach((elem) => {
 			root.features.push({
-				"type": "Feature",
+				type: 'Feature',
 				properties: {
 					brand: elem.item.brand,
 					opening_hours: elem.item.opening_hours,
-					name: elem.item.name,
+					name: elem.item.name
 				},
 				geometry: {
-					"type": "Point",
+					type: 'Point',
 					coordinates: elem.item.geom
 				}
-			})
+			});
 		});
+		return root;
 		return root
 	}
 
 	let filteredAtmData = $derived.by(() => {
-		if (typeof atmIndex === "undefined") return createGeoJsonFromIndex([])
-		if (typeof query === "undefined" || query === "") {
-			if (typeof convenience !== "undefined") return convenience
-			return createGeoJsonFromIndex([])
+		if (typeof atmIndex === 'undefined') return createGeoJsonFromIndex([]);
+		if (typeof query === 'undefined' || query === '') {
+			if (typeof atm !== 'undefined') return atm;
+			return createGeoJsonFromIndex([]);
 		}
-		const result = atmIndex.search(query)
-		return createGeoJsonFromIndex(result)
-	})
+		const result = atmIndex.search(query);
+		return createGeoJsonFromIndex(result);
+	});
 	let filteredConvenienceData = $derived.by(() => {
-		if (typeof convenienceIndex === "undefined") return createGeoJsonFromIndex([])
-		if (typeof query === "undefined" || query === "") {
-			if (typeof convenience !== "undefined") return convenience
-			return createGeoJsonFromIndex([])
+		if (typeof convenienceIndex === 'undefined') return createGeoJsonFromIndex([]);
+		if (typeof query === 'undefined' || query === '') {
+			if (typeof convenience !== 'undefined') return convenience;
+			return createGeoJsonFromIndex([]);
 		}
+		const result = convenienceIndex.search(query);
+		return createGeoJsonFromIndex(result);
 		const result = convenienceIndex.search(query)
 		return createGeoJsonFromIndex(result)
 	})
 	onMount(() => {
 		fetchAtmData();
 		fetchConvenienceData();
-	})
+	});
 </script>
 
-<MapLibre class="h-[60vh] min-h-[300px]" style={osm} zoom={4} center={{ lng: 141.350331, lat: 43.068643 }}>
+<MapLibre
+	class="h-[60vh] min-h-[300px]"
+	style={osm}
+	zoom={4}
+	center={{ lng: 141.350331, lat: 43.068643 }}
+>
 	<NavigationControl />
 	<ScaleControl />
 	<GeoJSONSource data={filteredAtmData as any}>
@@ -166,13 +174,16 @@
 				popup = {
 					lat: e.lngLat.lat,
 					lng: e.lngLat.lng,
-					content: typeof e.features !== "undefined" ? `<p>${e.features[0].properties["name"]}</p><p>営業時間: ${e.features[0].properties["opening_hours"]}</p>` : ""
-				}
+					content:
+						typeof e.features !== 'undefined'
+							? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+							: ''
+				};
 			}}
 		/>
 		<SymbolLayer
 			layout={{
-				'text-field': ["format", ["coalesce", ["get", "brand"], ["get", "name"]]],
+				'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
 				'text-font': ['Open Sans Bold'],
 				'text-offset': [0, 1]
 			}}
@@ -183,101 +194,153 @@
 		/>
 	</GeoJSONSource>
 	<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
-		{#if convenienceSelectedBrand == "lawson"}
-		<SymbolLayer
-			layout={{
-				'text-font': ['Noto Sans JP Bold'],
-				'text-field': '{brand}',
-				'text-offset': [0, 1]
-			}}
-			paint={{
-				'text-halo-width': 2,
-				'text-halo-color': 'white'
-			}}
-			filter={["any", ["==", ["get","brand"], "ローソン"], ["==", ["get","name"], "ローソン"], ["==", ["get", "brand"], "LAWSON"], ["==", ["get", "name"], "LAWSON"]]}
-		/>
-		<CircleLayer
-			paint={{
-				'circle-color': 'blue',
-				'circle-opacity': 0.8,
-				'circle-stroke-color': 'gray',
-				'circle-stroke-width': 1
-			}}
-			filter={["any", ["==", ["get","brand"], "ローソン"], ["==", ["get","name"], "ローソン"], ["==", ["get", "brand"], "LAWSON"], ["==", ["get", "name"], "LAWSON"]]}
-			onclick={(e) => {
-				popup = {
-					lat: e.lngLat.lat,
-					lng: e.lngLat.lng,
-					content: typeof e.features !== "undefined" ? `<p>${e.features[0].properties["name"]}</p><p>営業時間: ${e.features[0].properties["opening_hours"]}</p>` : ""
-				}
-			}}
-		/>
-		{:else if convenienceSelectedBrand == "seven"}
-		<CircleLayer
-			paint={{
-				'circle-color': 'red',
-				'circle-opacity': 0.8,
-				'circle-stroke-color': 'gray',
-				'circle-stroke-width': 1
-			}}
-			filter={["any", ["==", ["get","brand"], "セブン-イレブン"], ["==", ["get","name"], "セブン-イレブン"], ["==", ["get", "brand"], "7-ELEVEN"], ["==", ["get", "name"], "7-ELEVEN"]]}
-			onclick={(e) => {
-				popup = {
-					lat: e.lngLat.lat,
-					lng: e.lngLat.lng,
-					content: typeof e.features !== "undefined" ? `<p>${e.features[0].properties["name"]}</p><p>営業時間: ${e.features[0].properties["opening_hours"]}</p>` : ""
-				}
-			}}
-		/>
-		<SymbolLayer
-			layout={{
-				'text-font': ['Open Sans Bold'],
-				'text-field': '{brand}',
-				'text-offset': [0, 1]
-			}}
-			paint={{
-				'text-halo-width': 2,
-				'text-halo-color': 'white'
-			}}
-			filter={["any", ["==", ["get","brand"], "セブン-イレブン"], ["==", ["get","name"], "セブン-イレブン"], ["==", ["get", "brand"], "7-ELEVEN"], ["==", ["get", "name"], "7-ELEVEN"]]}
-		/>
-		{:else if convenienceSelectedBrand == "familymart"}
-		<CircleLayer
-			paint={{
-				'circle-color': 'green',
-				'circle-opacity': 0.8,
-				'circle-stroke-color': 'gray',
-				'circle-stroke-width': 1
-			}}
-			filter={["any", ["==", ["get","brand"], "ファミリーマート"], ["==", ["get","name"], "ファミリーマート"], ["==", ["get", "brand"], "FamilyMart"], ["==", ["get", "name"], "FamilyMart"]]}
-			onclick={(e) => {
-				popup = {
-					lat: e.lngLat.lat,
-					lng: e.lngLat.lng,
-					content: typeof e.features !== "undefined" ? `<p>${e.features[0].properties["name"]}</p><p>営業時間: ${e.features[0].properties["opening_hours"]}</p>` : ""
-				}
-			}}
-		/>
-		<SymbolLayer
-			layout={{
-				'text-font': ['Open Sans Bold'],
-				'text-field': '{brand}',
-				'text-offset': [0, 1]
-			}}
-			paint={{
-				'text-halo-width': 2,
-				'text-halo-color': 'white'
-			}}
-			filter={["any", ["==", ["get","brand"], "ファミリーマート"], ["==", ["get","name"], "ファミリーマート"], ["==", ["get", "brand"], "FamilyMart"], ["==", ["get", "name"], "FamilyMart"]]}
-		/>
+		{#if convenienceSelectedBrand == 'lawson'}
+			<SymbolLayer
+				layout={{
+					'text-font': ['Noto Sans JP Bold'],
+					'text-field': '{brand}',
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'ローソン'],
+					['==', ['get', 'name'], 'ローソン'],
+					['==', ['get', 'brand'], 'LAWSON'],
+					['==', ['get', 'name'], 'LAWSON']
+				]}
+			/>
+			<CircleLayer
+				paint={{
+					'circle-color': 'blue',
+					'circle-opacity': 0.8,
+					'circle-stroke-color': 'gray',
+					'circle-stroke-width': 1
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'ローソン'],
+					['==', ['get', 'name'], 'ローソン'],
+					['==', ['get', 'brand'], 'LAWSON'],
+					['==', ['get', 'name'], 'LAWSON']
+				]}
+				onclick={(e) => {
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								: ''
+					};
+				}}
+			/>
+		{:else if convenienceSelectedBrand == 'seven'}
+			<CircleLayer
+				paint={{
+					'circle-color': 'red',
+					'circle-opacity': 0.8,
+					'circle-stroke-color': 'gray',
+					'circle-stroke-width': 1
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'セブン-イレブン'],
+					['==', ['get', 'name'], 'セブン-イレブン'],
+					['==', ['get', 'brand'], '7-ELEVEN'],
+					['==', ['get', 'name'], '7-ELEVEN']
+				]}
+				onclick={(e) => {
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								: ''
+					};
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					'text-font': ['Open Sans Bold'],
+					'text-field': '{brand}',
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'セブン-イレブン'],
+					['==', ['get', 'name'], 'セブン-イレブン'],
+					['==', ['get', 'brand'], '7-ELEVEN'],
+					['==', ['get', 'name'], '7-ELEVEN']
+				]}
+			/>
+		{:else if convenienceSelectedBrand == 'familymart'}
+			<CircleLayer
+				paint={{
+					'circle-color': 'green',
+					'circle-opacity': 0.8,
+					'circle-stroke-color': 'gray',
+					'circle-stroke-width': 1
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'ファミリーマート'],
+					['==', ['get', 'name'], 'ファミリーマート'],
+					['==', ['get', 'brand'], 'FamilyMart'],
+					['==', ['get', 'name'], 'FamilyMart']
+				]}
+				onclick={(e) => {
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								: ''
+					};
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					'text-font': ['Open Sans Bold'],
+					'text-field': '{brand}',
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+				filter={[
+					'any',
+					['==', ['get', 'brand'], 'ファミリーマート'],
+					['==', ['get', 'name'], 'ファミリーマート'],
+					['==', ['get', 'brand'], 'FamilyMart'],
+					['==', ['get', 'name'], 'FamilyMart']
+				]}
+			/>
 		{/if}
 	</GeoJSONSource>
 	{#if popup !== null}
-	<Popup lnglat={{lng:popup.lng, lat:popup.lat}} onclose={() => popup = null}>{@html popup.content }</Popup>
+		<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
+			>{@html popup.content}</Popup
+		>
 	{/if}
 </MapLibre>
 
-<select name="brand" id="select-brand" bind:value={convenienceSelectedBrand} onchange={() => console.log($state.snapshot(convenienceSelectedBrand))}>
+<select
+	name="brand"
+	id="select-brand"
+	bind:value={convenienceSelectedBrand}
+	onchange={() => console.log($state.snapshot(convenienceSelectedBrand))}
+>
 	{#each brands as brand (brand.name)}
 		<option value={brand.name}>{brand.displayName[0]}</option>
 	{/each}
