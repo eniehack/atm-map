@@ -66,12 +66,15 @@
 		}[]
 	}
 	let atmIndex = $state<Fuse<Index>>();
+	let atm = $state<GeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
+	let convenience = $state<GeoJSON>();
 	let query = $state<string>();
 
 	const fetchAtmData = async () => {
 		const resp = await fetch(`${base}/atm.json`);
 		const json = await resp.json() as GeoJSON
+		atm = json
 		const index = [] as Index[];
 		json.features.forEach(feature => {
 			index.push({
@@ -87,6 +90,7 @@
 	const fetchConvenienceData = async () => {
 		const resp = await fetch(`${base}/convenience.json`);
 		const json = await resp.json() as GeoJSON
+		convenience = json
 		const index = [] as Index[];
 		json.features.forEach(feature => {
 			index.push({
@@ -124,14 +128,20 @@
 	}
 
 	let filteredAtmData = $derived.by(() => {
-		if (typeof query === "undefined" || query === "") return createGeoJsonFromIndex([])
 		if (typeof atmIndex === "undefined") return createGeoJsonFromIndex([])
+		if (typeof query === "undefined" || query === "") {
+			if (typeof convenience !== "undefined") return convenience
+			return createGeoJsonFromIndex([])
+		}
 		const result = atmIndex.search(query)
 		return createGeoJsonFromIndex(result)
 	})
 	let filteredConvenienceData = $derived.by(() => {
-		if (typeof query === "undefined" || query === "") return createGeoJsonFromIndex([])
 		if (typeof convenienceIndex === "undefined") return createGeoJsonFromIndex([])
+		if (typeof query === "undefined" || query === "") {
+			if (typeof convenience !== "undefined") return convenience
+			return createGeoJsonFromIndex([])
+		}
 		const result = convenienceIndex.search(query)
 		return createGeoJsonFromIndex(result)
 	})
