@@ -6,13 +6,15 @@
 		GeoJSONSource,
 		CircleLayer,
 		SymbolLayer,
-		Popup
+		Popup,
+		GeolocateControl
 	} from 'svelte-maplibre-gl';
 	import { osm } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
 	import { onMount } from 'svelte';
+	import { distance } from '@turf/distance';
 
 	type PopupArgument = {
 		lng: number;
@@ -70,6 +72,7 @@
 	let convenienceIndex = $state<Fuse<Index>>();
 	let convenience = $state<GeoJSON>();
 	let query = $state<string>();
+	let userLocation = $state<LatLng>();
 
 	const fetchAtmData = async () => {
 		const resp = await fetch(`${base}/atm.json`);
@@ -125,7 +128,38 @@
 			});
 		});
 		return root;
-		return root
+	};
+	const findNearestPoint = () => {
+		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
+		if (typeof userLocation === 'undefined') return null;
+		const target = [...atm.features, ...convenience.features];
+		let minDistancePoint: {distance: number, feature: {brand: string | null, opening_hours: string | null, name: string | null} | null} = {distance: Infinity, feature: null}
+		target.forEach((point) => {
+			const d = distance(userLocation, point.geometry.coordinates);
+			if (d < minDistancePoint.distance) {
+				minDistancePoint = {
+					distance: d,
+					feature: point.properties,
+				}
+			}
+		});
+		return minDistancePoint;
+	};
+	const findNearestPointWithQuery = () => {
+		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined') return null;
+		if (typeof userLocation === 'undefined') return null;
+		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		let minDistancePoint: {distance: number, feature: {brand: string | null, opening_hours: string | null, name: string | null} | null} = {distance: Infinity, feature: null}
+		target.forEach((point) => {
+			const d = distance(userLocation, point.geometry.coordinates);
+			if (d < minDistancePoint.distance) {
+				minDistancePoint = {
+					distance: d,
+					feature: point.properties,
+				}
+			}
+		});
+		return minDistancePoint;
 	}
 
 	let filteredAtmData = $derived.by(() => {
@@ -145,8 +179,14 @@
 		}
 		const result = convenienceIndex.search(query);
 		return createGeoJsonFromIndex(result);
-		const result = convenienceIndex.search(query)
-		return createGeoJsonFromIndex(result)
+	});
+	let nearPoint = $derived.by(() => {
+		if (query === "undefined" || query === "") {
+			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
+			return findNearestPoint()
+		}
+		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined') return;
+		return findNearestPointWithQuery()
 	})
 	onMount(() => {
 		fetchAtmData();
@@ -162,6 +202,10 @@
 >
 	<NavigationControl />
 	<ScaleControl />
+	<GeolocateControl
+		trackUserLocation={true}
+		ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
+	/>
 	<GeoJSONSource data={filteredAtmData as any}>
 		<CircleLayer
 			paint={{
@@ -347,3 +391,7 @@
 </select>
 
 <input type="text" id="q" bind:value={query} />
+
+{#if typeof nearPoint !== "undefined" && nearPoint !== null && nearPoint.feature !== null}
+<p>{nearPoint.distance}: {nearPoint.feature.brand} {nearPoint.feature.name}</p>
+{/if}
