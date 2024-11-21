@@ -310,7 +310,7 @@
 		type="text"
 		id="q"
 		bind:value={query}
-		onkeydown={(e) => {
+		oninput={(e) => {
 			// @ts-ignore
 			handleQuery(e.target.value);
 		}}
