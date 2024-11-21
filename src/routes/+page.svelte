@@ -7,13 +7,17 @@
 		CircleLayer,
 		SymbolLayer,
 		Popup,
-		GeolocateControl
+		GeolocateControl,
+		FillLayer,
+		LineLayer
 	} from 'svelte-maplibre-gl';
 	import { osm } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
 	import { distance } from '@turf/distance';
+	import { buffer } from '@turf/buffer';
+	import { point } from '@turf/helpers';
 	import { fade } from 'svelte/transition';
 
 	type PopupArgument = {
@@ -58,8 +62,8 @@
 	};
 	type GeoJSON = {
 		type: string;
-		name: string;
-		crs: object;
+		name?: string;
+		crs?: object;
 		features: {
 			type: string;
 			properties: {
@@ -78,7 +82,7 @@
 	let convenienceIndex = $state<Fuse<Index>>();
 	let convenience = $state<GeoJSON>();
 	let query = $state<string>();
-	let userLocation = $state<LatLng>();
+	let userLocation = $state<[number, number]>();
 	let isTextFieldFocused = $state(false);
 
 	const fetchAtmData = async () => {
@@ -251,6 +255,17 @@
 	$inspect(thresholdDistance);
 
 	let map: maplibregl.Map | undefined = $state(undefined);
+
+	let circleFromUserPosition: any = $derived.by(() => {
+		if (typeof userLocation === 'undefined')
+			return {
+				type: 'FeatureCollection',
+				features: []
+			};
+		const p = point(userLocation);
+		const buffered = buffer(p, thresholdDistance);
+		return buffered;
+	});
 </script>
 
 <div class="fixed bottom-0 top-14">
@@ -267,6 +282,20 @@
 			trackUserLocation={true}
 			ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
 		/>
+		<GeoJSONSource data={circleFromUserPosition}>
+			<FillLayer
+				paint={{
+					'fill-color': '#00bfff',
+					'fill-opacity': 0.5
+				}}
+			/>
+			<LineLayer
+				paint={{
+					'line-color': 'white',
+					'line-width': 2
+				}}
+			/>
+		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
 				paint={{
@@ -371,7 +400,7 @@
 		{/each}
 	</select>-->
 </div>
-{#if isTextFieldFocused && ((typeof query !== 'undefined' && query.length == 0) || typeof query === "undefined")}
+{#if isTextFieldFocused && ((typeof query !== 'undefined' && query.length == 0) || typeof query === 'undefined')}
 	<div
 		class="absolute top-28 left-4 w-64 p-2 bg-gray-100 border border-gray-300 rounded shadow text-gray-600"
 		transition:fade
