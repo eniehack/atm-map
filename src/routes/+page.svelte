@@ -14,6 +14,7 @@
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
 	import { distance } from '@turf/distance';
+	import { fade } from 'svelte/transition';
 
 	type PopupArgument = {
 		lng: number;
@@ -52,6 +53,7 @@
 	let convenience = $state<GeoJSON>();
 	let query = $state<string>();
 	let userLocation = $state<LatLng>();
+	let isTextFieldFocused = $state(false);
 
 	const fetchAtmData = async () => {
 		const resp = await fetch(`${base}/atm.json`);
@@ -252,45 +254,43 @@
 		{/if}
 	</MapLibre>
 </div>
-			<SymbolLayer
-				layout={{
-					'text-font': ['Open Sans Bold'],
-					'text-field': '{brand}',
-					'text-offset': [0, 1]
-				}}
-				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
-				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'ファミリーマート'],
-					['==', ['get', 'name'], 'ファミリーマート'],
-					['==', ['get', 'brand'], 'FamilyMart'],
-					['==', ['get', 'name'], 'FamilyMart']
-				]}
-			/>
-		{/if}
-	</GeoJSONSource>
-	{#if popup !== null}
-		<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
-			>{@html popup.content}</Popup
-		>
-	{/if}
-</MapLibre>
-
-<select
-	name="brand"
-	id="select-brand"
-	bind:value={convenienceSelectedBrand}
-	onchange={() => console.log($state.snapshot(convenienceSelectedBrand))}
->
-	{#each brands as brand (brand.name)}
-		<option value={brand.name}>{brand.displayName[0]}</option>
-	{/each}
-</select>
-
-<input type="text" id="q" bind:value={query} />
+<div class="absolute top-16 left-2 w-64">
+	<input
+		type="text"
+		id="q"
+		bind:value={query}
+		placeholder="ここから絞り込み検索"
+		class="bg-neutral-500 p-2 rounded-full w-[17rem]"
+		onfocus={() => (isTextFieldFocused = true)}
+		onblur={() => (isTextFieldFocused = false)}
+	/>
+	<!--<select
+		name="brand"
+		id="select-brand"
+		bind:value={convenienceSelectedBrand}
+		onchange={() => console.log($state.snapshot(convenienceSelectedBrand))}
+	>
+		{#each brands as brand (brand.name)}
+			<option value={brand.name}>{brand.displayName[0]}</option>
+		{/each}
+	</select>-->
+</div>
+{#if isTextFieldFocused && typeof query !== "undefined" && query.length == 0}
+	<div
+		class="absolute top-28 left-4 w-64 p-2 bg-gray-100 border border-gray-300 rounded shadow text-gray-600"
+		transition:fade
+	>
+		<p>
+		あいまい検索に対応しています。例: 「ファミマ」→ファミリーマートが表示される、など。
+		</p>
+		<p>
+		完全一致させたい場合は「"」で囲ってください。例: 「"北海道銀行"」
+		</p>
+		<p>
+		ネット銀行などATMを持たない一部の金融機関もそのまま銀行名を入力することで対応するATMを検索できます。
+		</p>
+	</div>
+{/if}
 
 {#if typeof nearPoint !== "undefined" && nearPoint !== null && nearPoint.feature !== null}
 <p>{nearPoint.distance}: {nearPoint.feature.brand} {nearPoint.feature.name}</p>
