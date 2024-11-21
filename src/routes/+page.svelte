@@ -19,6 +19,7 @@
 	import { buffer } from '@turf/buffer';
 	import { point } from '@turf/helpers';
 	import { fade } from 'svelte/transition';
+	import { debounce } from 'es-toolkit';
 
 	type PopupArgument = {
 		lng: number;
@@ -183,34 +184,35 @@
 		return filteredPoints.slice(0, 9);
 	};
 
-	let filteredAtmData = $derived.by(() => {
-		if (typeof atmIndex === 'undefined') return createGeoJsonFromIndex([]);
+	let filteredAtmData = $state(createGeoJsonFromIndex([]));
+	let filteredConvenienceData = $state(createGeoJsonFromIndex([]));
+
+	/**
+	 * Fuseインデックスの検索を実行し、stateを更新する
+	 */
+	const handleQuery = debounce((query: string) => {
+		if (typeof atmIndex === 'undefined') {
+			filteredAtmData = createGeoJsonFromIndex([]);
+			return;
+		}
+		if (typeof convenienceIndex === 'undefined') {
+			filteredConvenienceData = createGeoJsonFromIndex([]);
+			return;
+		}
+
 		if (typeof query === 'undefined' || query === '') {
-			if (typeof atm !== 'undefined') return atm;
-			return createGeoJsonFromIndex([]);
+			filteredAtmData = atm ?? createGeoJsonFromIndex([]);
+			filteredConvenienceData = convenience ?? createGeoJsonFromIndex([]);
+			return;
 		}
-		if (queryMacroMap.has(query)) {
-			const q = queryMacroMap.get(query);
-			const result = atmIndex.search(q!);
-			return createGeoJsonFromIndex(result);
-		}
-		const result = atmIndex.search(query);
-		return createGeoJsonFromIndex(result);
-	});
-	let filteredConvenienceData = $derived.by(() => {
-		if (typeof convenienceIndex === 'undefined') return createGeoJsonFromIndex([]);
-		if (typeof query === 'undefined' || query === '') {
-			if (typeof convenience !== 'undefined') return convenience;
-			return createGeoJsonFromIndex([]);
-		}
-		if (queryMacroMap.has(query)) {
-			const q = queryMacroMap.get(query);
-			const result = convenienceIndex.search(q!);
-			return createGeoJsonFromIndex(result);
-		}
-		const result = convenienceIndex.search(query);
-		return createGeoJsonFromIndex(result);
-	});
+
+		const q = queryMacroMap.has(query) ? queryMacroMap.get(query) : query;
+		const resultAtm = atmIndex.search(q!);
+		const resultConvenience = convenienceIndex.search(q!);
+		filteredAtmData = createGeoJsonFromIndex(resultAtm);
+		filteredConvenienceData = createGeoJsonFromIndex(resultConvenience);
+	}, 500); // 500ms
+
 	let nearPoint = $derived.by(() => {
 		if (query === 'undefined' || query === '') {
 			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
@@ -220,9 +222,11 @@
 			return;
 		return findNearestPointWithQuery();
 	});
+
 	$effect(() => {
-		fetchAtmData();
-		fetchConvenienceData();
+		Promise.all([fetchAtmData(), fetchConvenienceData()]).then(() => {
+			handleQuery('');
+		});
 	});
 
 	const distances = [
@@ -319,7 +323,7 @@
 			<SymbolLayer
 				layout={{
 					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
-					'text-font': ['Open Sans Bold'],
+					'text-font': ['Noto Sans Bold'],
 					'text-offset': [0, 1]
 				}}
 				paint={{
@@ -331,7 +335,7 @@
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<SymbolLayer
 				layout={{
-					'text-font': ['Noto Sans JP Bold'],
+					'text-font': ['Noto Sans Bold'],
 					'text-field': '{brand}',
 					'text-offset': [0, 1]
 				}}
@@ -371,6 +375,10 @@
 		type="text"
 		id="q"
 		bind:value={query}
+		oninput={(e) => {
+			// @ts-ignore
+			handleQuery(e.target.value);
+		}}
 		placeholder="ここから絞り込み検索"
 		class="bg-neutral-500 p-2 rounded-full w-[17rem]"
 		onfocus={() => (isTextFieldFocused = true)}
