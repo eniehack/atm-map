@@ -61,17 +61,20 @@
 		name: string | null;
 		geom: LatLng;
 	};
+
+	type GeoJSONFeature = {
+		fid: number;
+		brand: string | null;
+		opening_hours: string | null;
+		name: string | null;
+	};
 	type GeoJSON = {
 		type: string;
 		name?: string;
 		crs?: object;
 		features: {
 			type: string;
-			properties: {
-				brand: string | null;
-				opening_hours: string | null;
-				name: string | null;
-			};
+			properties: GeoJSONFeature;
 			geometry: {
 				type: string;
 				coordinates: [number, number];
@@ -96,6 +99,7 @@
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
+				fid: feature.properties.fid,
 				geom: feature.geometry.coordinates
 			} as Index);
 		});
@@ -112,6 +116,7 @@
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
+				fid: feature.properties.fid,
 				geom: feature.geometry.coordinates
 			} as Index);
 		});
@@ -129,6 +134,7 @@
 			root.features.push({
 				type: 'Feature',
 				properties: {
+					fid: elem.item.fid,
 					brand: elem.item.brand,
 					opening_hours: elem.item.opening_hours,
 					name: elem.item.name
@@ -143,7 +149,7 @@
 	};
 	type NearPoint = {
 		distance: number;
-		feature: Record<string, string | null>;
+		feature: GeoJSONFeature;
 		coordinate: [number, number];
 	};
 	const findNearestPoint = () => {
@@ -256,7 +262,6 @@
 		}
 	];
 	let thresholdDistance = $state<number>(0.1);
-	$inspect(thresholdDistance);
 
 	let map: maplibregl.Map | undefined = $state(undefined);
 
@@ -303,7 +308,12 @@
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
 				paint={{
-					'circle-color': '#FFC300',
+					'circle-color': [
+						'case',
+						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						'red',
+						'#FFC300'
+					],
 					'circle-opacity': 0.8,
 					'circle-stroke-color': 'white',
 					'circle-stroke-width': 1
