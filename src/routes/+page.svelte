@@ -13,7 +13,6 @@
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
-	import { onMount } from 'svelte';
 	import { distance } from '@turf/distance';
 
 	type PopupArgument = {
@@ -165,10 +164,7 @@
 			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
 			return findNearestPoint()
 		}
-		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined') return;
-		return findNearestPointWithQuery()
-	})
-	onMount(() => {
+	$effect(() => {
 		fetchAtmData();
 		fetchConvenienceData();
 	});
