@@ -328,6 +328,16 @@
 	</div>
 {/if}
 
-{#if typeof nearPoint !== "undefined" && nearPoint !== null && nearPoint.feature !== null}
-<p>{nearPoint.distance}: {nearPoint.feature.brand} {nearPoint.feature.name}</p>
+{#if typeof nearPoint !== 'undefined' && nearPoint !== null && nearPoint.feature !== null}
+	<div class="absolute bottom-14 left-2">
+		<p class="bg-red-200 p-2">
+			{#if nearPoint.feature.brand !== null}
+				{nearPoint.feature.brand}
+			{:else}
+				{nearPoint.feature.name}
+			{/if}
+			({Math.round(nearPoint.distance * 1000)} m)
+		</p>
+		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
+	</div>
 {/if}
