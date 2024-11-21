@@ -22,6 +22,32 @@
 		content: string;
 	};
 	let popup = $state<null | PopupArgument>(null);
+	// NOTE: https://www.wikidata.org/wiki/Q11500940 をリンクしている銀行をリストアップする
+	const queryMacroMap: Map<string, object> = new Map([
+		[
+			'ソニー銀行',
+			{
+				$or: [
+					{ brand: '^セブン' },
+					{ brand: '"7-ELEVEN"' },
+					{ brand: '^LAWSON' },
+					{ brand: '^ローソン' },
+					{ brand: '^イオン' },
+					{ brand: '"ミニストップ"' },
+					{ brand: '"ミニストップ"' },
+					{ brand: '三菱UFJ' },
+					{ brand: '^三井住友' },
+					{ brand: 'イーネット' }
+				]
+			}
+		],
+		['UI銀行', {}],
+		['みんなの銀行', {}],
+		['大和ネクスト銀行', {}],
+		['auじぶん銀行', {}],
+		['住信SBIネット銀行', {}],
+		['ゆうちょ銀行', {$or: [{name: "郵便局"}, {brand: "ゆうちょ銀行"}]}]
+	]);
 
 	type LatLng = [number, number];
 	type Index = {
@@ -149,6 +175,11 @@
 			if (typeof atm !== 'undefined') return atm;
 			return createGeoJsonFromIndex([]);
 		}
+		if (queryMacroMap.has(query)) {
+			const q = queryMacroMap.get(query);
+			const result = atmIndex.search(q!);
+			return createGeoJsonFromIndex(result);
+		}
 		const result = atmIndex.search(query);
 		return createGeoJsonFromIndex(result);
 	});
@@ -157,6 +188,11 @@
 		if (typeof query === 'undefined' || query === '') {
 			if (typeof convenience !== 'undefined') return convenience;
 			return createGeoJsonFromIndex([]);
+		}
+		if (queryMacroMap.has(query)) {
+			const q = queryMacroMap.get(query);
+			const result = convenienceIndex.search(q!);
+			return createGeoJsonFromIndex(result);
 		}
 		const result = convenienceIndex.search(query);
 		return createGeoJsonFromIndex(result);
