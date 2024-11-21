@@ -183,7 +183,7 @@
 	/**
 	 * Fuseインデックスの検索を実行し、stateを更新する
 	 */
-	const handleQuery = (query: string) => {
+	const handleQuery = debounce((query: string) => {
 		if (typeof atmIndex === 'undefined') {
 			filteredAtmData = createGeoJsonFromIndex([]);
 			return;
@@ -221,7 +221,7 @@
 		}
 		filteredAtmData = createGeoJsonFromIndex(resultAtm);
 		filteredConvenienceData = createGeoJsonFromIndex(resultConvenience);
-	};
+	}, 500); // 500ms
 
 	let nearPoint = $derived.by(() => {
 		if (query === 'undefined' || query === '') {
