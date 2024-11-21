@@ -136,17 +136,23 @@
 		});
 		return root;
 	};
+	type NearPoint = {
+		distance: number;
+		feature: Record<string, string | null>;
+		coordinate: [number, number];
+	};
 	const findNearestPoint = () => {
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
-		const filteredPoints = [] as { distance: number; feature: Record<string, string | null> }[];
+		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
 			if (d < thresholdDistance) {
 				filteredPoints.push({
 					distance: d,
-					feature: point.properties
+					feature: point.properties,
+					coordinate: point.geometry.coordinates
 				});
 			}
 		});
@@ -158,13 +164,14 @@
 			return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
-		const filteredPoints = [] as { distance: number; feature: Record<string, string | null> }[];
+		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
 			if (d < thresholdDistance) {
 				filteredPoints.push({
 					distance: d,
-					feature: point.properties
+					feature: point.properties,
+					coordinate: point.geometry.coordinates
 				});
 			}
 		});
@@ -242,10 +249,13 @@
 	];
 	let thresholdDistance = $state<number>(0.1);
 	$inspect(thresholdDistance);
+
+	let map: maplibregl.Map | undefined = $state(undefined);
 </script>
 
 <div class="fixed bottom-0 top-14">
 	<MapLibre
+		bind:map
 		class="h-full w-screen"
 		style={osm}
 		zoom={4}
@@ -274,6 +284,7 @@
 								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
 								: ''
 					};
+					map?.flyTo({ center: e.lngLat });
 				}}
 			/>
 			<SymbolLayer
@@ -376,7 +387,17 @@
 {#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 	<div class="absolute bottom-14 left-2">
 		{#each nearPoint as point}
-			<p class="bg-red-200 p-2">
+			<p
+				class="bg-red-200 p-2"
+				onclick={() => {
+					map?.flyTo({ center: point.coordinate });
+					popup = {
+						lat: point.coordinate[1],
+						lng: point.coordinate[0],
+						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}</p>`
+					};
+				}}
+			>
 				{#if point.feature.brand !== null}
 					{point.feature.brand}
 				{:else}
