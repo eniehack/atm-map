@@ -194,31 +194,14 @@
 		}
 
 		if (typeof query === 'undefined' || query === '') {
-			if (typeof atm !== 'undefined') {
-				filteredAtmData = atm;
-			} else {
-				filteredAtmData = createGeoJsonFromIndex([]);
-			}
-
-			if (typeof convenience !== 'undefined') {
-				filteredConvenienceData = convenience;
-			} else {
-				filteredConvenienceData = createGeoJsonFromIndex([]);
-			}
-
+			filteredAtmData = atm ?? createGeoJsonFromIndex([]);
+			filteredConvenienceData = convenience ?? createGeoJsonFromIndex([]);
 			return;
 		}
 
-		let resultAtm: FuseResult<Index>[];
-		let resultConvenience: FuseResult<Index>[];
-		if (queryMacroMap.has(query)) {
-			const q = queryMacroMap.get(query);
-			resultAtm = atmIndex.search(q!);
-			resultConvenience = convenienceIndex.search(q!);
-		} else {
-			resultAtm = atmIndex.search(query);
-			resultConvenience = convenienceIndex.search(query);
-		}
+		const q = queryMacroMap.has(query) ? queryMacroMap.get(query) : query;
+		const resultAtm = atmIndex.search(q!);
+		const resultConvenience = convenienceIndex.search(q!);
 		filteredAtmData = createGeoJsonFromIndex(resultAtm);
 		filteredConvenienceData = createGeoJsonFromIndex(resultConvenience);
 	}, 500); // 500ms
