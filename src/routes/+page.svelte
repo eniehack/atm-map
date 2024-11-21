@@ -258,7 +258,7 @@
 			<SymbolLayer
 				layout={{
 					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
-					'text-font': ['Open Sans Bold'],
+					'text-font': ['Noto Sans Bold'],
 					'text-offset': [0, 1]
 				}}
 				paint={{
@@ -270,7 +270,7 @@
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<SymbolLayer
 				layout={{
-					'text-font': ['Noto Sans JP Bold'],
+					'text-font': ['Noto Sans Bold'],
 					'text-field': '{brand}',
 					'text-offset': [0, 1]
 				}}
