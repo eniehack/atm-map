@@ -7,13 +7,17 @@
 		CircleLayer,
 		SymbolLayer,
 		Popup,
-		GeolocateControl
+		GeolocateControl,
+		FillLayer,
+		LineLayer
 	} from 'svelte-maplibre-gl';
 	import { osm } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
 	import { distance } from '@turf/distance';
+	import { buffer } from '@turf/buffer';
+	import { point } from '@turf/helpers';
 	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
 
@@ -59,8 +63,8 @@
 	};
 	type GeoJSON = {
 		type: string;
-		name: string;
-		crs: object;
+		name?: string;
+		crs?: object;
 		features: {
 			type: string;
 			properties: {
@@ -79,7 +83,7 @@
 	let convenienceIndex = $state<Fuse<Index>>();
 	let convenience = $state<GeoJSON>();
 	let query = $state<string>();
-	let userLocation = $state<LatLng>();
+	let userLocation = $state<[number, number]>();
 	let isTextFieldFocused = $state(false);
 
 	const fetchAtmData = async () => {
@@ -137,44 +141,47 @@
 		});
 		return root;
 	};
+	type NearPoint = {
+		distance: number;
+		feature: Record<string, string | null>;
+		coordinate: [number, number];
+	};
 	const findNearestPoint = () => {
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...atm.features, ...convenience.features];
-		let minDistancePoint: {
-			distance: number;
-			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
-		} = { distance: Infinity, feature: null };
+		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
-			if (d < minDistancePoint.distance) {
-				minDistancePoint = {
+			if (d < thresholdDistance) {
+				filteredPoints.push({
 					distance: d,
-					feature: point.properties
-				};
+					feature: point.properties,
+					coordinate: point.geometry.coordinates
+				});
 			}
 		});
-		return minDistancePoint;
+		filteredPoints.sort((a, b) => a.distance - b.distance);
+		return filteredPoints.slice(0, 9);
 	};
 	const findNearestPointWithQuery = () => {
 		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined')
 			return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
-		let minDistancePoint: {
-			distance: number;
-			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
-		} = { distance: Infinity, feature: null };
+		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
-			if (d < minDistancePoint.distance) {
-				minDistancePoint = {
+			if (d < thresholdDistance) {
+				filteredPoints.push({
 					distance: d,
-					feature: point.properties
-				};
+					feature: point.properties,
+					coordinate: point.geometry.coordinates
+				});
 			}
 		});
-		return minDistancePoint;
+		filteredPoints.sort((a, b) => a.distance - b.distance);
+		return filteredPoints.slice(0, 9);
 	};
 
 	let filteredAtmData = $state(createGeoJsonFromIndex([]));
@@ -221,10 +228,53 @@
 			handleQuery('');
 		});
 	});
+
+	const distances = [
+		{
+			name: '何m圏内のATMを探しますか？',
+			value: undefined
+		},
+		{
+			name: '100m',
+			value: 0.1
+		},
+		{
+			name: '200m',
+			value: 0.2
+		},
+		{
+			name: '500m',
+			value: 0.5
+		},
+		{
+			name: '1km',
+			value: 1
+		},
+		{
+			name: '5km',
+			value: 5
+		}
+	];
+	let thresholdDistance = $state<number>(0.1);
+	$inspect(thresholdDistance);
+
+	let map: maplibregl.Map | undefined = $state(undefined);
+
+	let circleFromUserPosition: any = $derived.by(() => {
+		if (typeof userLocation === 'undefined')
+			return {
+				type: 'FeatureCollection',
+				features: []
+			};
+		const p = point(userLocation);
+		const buffered = buffer(p, thresholdDistance);
+		return buffered;
+	});
 </script>
 
 <div class="fixed bottom-0 top-14">
 	<MapLibre
+		bind:map
 		class="h-full w-screen"
 		style={osm}
 		zoom={4}
@@ -236,6 +286,20 @@
 			trackUserLocation={true}
 			ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
 		/>
+		<GeoJSONSource data={circleFromUserPosition}>
+			<FillLayer
+				paint={{
+					'fill-color': '#00bfff',
+					'fill-opacity': 0.5
+				}}
+			/>
+			<LineLayer
+				paint={{
+					'line-color': 'white',
+					'line-width': 2
+				}}
+			/>
+		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
 				paint={{
@@ -253,6 +317,7 @@
 								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
 								: ''
 					};
+					map?.flyTo({ center: e.lngLat });
 				}}
 			/>
 			<SymbolLayer
@@ -319,6 +384,19 @@
 		onfocus={() => (isTextFieldFocused = true)}
 		onblur={() => (isTextFieldFocused = false)}
 	/>
+	<select
+		id="near-threshold"
+		onchange={(e) => {
+			if (e.target !== null) {
+				// @ts-ignore
+				thresholdDistance = Number(e.target.value);
+			}
+		}}
+	>
+		{#each distances as d (d.name)}
+			<option value={d.value}>{d.name}</option>
+		{/each}
+	</select>
 	<!--<select
 		name="brand"
 		id="select-brand"
@@ -330,7 +408,7 @@
 		{/each}
 	</select>-->
 </div>
-{#if isTextFieldFocused && typeof query !== 'undefined' && query.length == 0}
+{#if isTextFieldFocused && ((typeof query !== 'undefined' && query.length == 0) || typeof query === 'undefined')}
 	<div
 		class="absolute top-28 left-4 w-64 p-2 bg-gray-100 border border-gray-300 rounded shadow text-gray-600"
 		transition:fade
@@ -343,16 +421,28 @@
 	</div>
 {/if}
 
-{#if typeof nearPoint !== 'undefined' && nearPoint !== null && nearPoint.feature !== null}
+{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 	<div class="absolute bottom-14 left-2">
-		<p class="bg-red-200 p-2">
-			{#if nearPoint.feature.brand !== null}
-				{nearPoint.feature.brand}
-			{:else}
-				{nearPoint.feature.name}
-			{/if}
-			({Math.round(nearPoint.distance * 1000)} m)
-		</p>
+		{#each nearPoint as point}
+			<p
+				class="bg-red-200 p-2"
+				onclick={() => {
+					map?.flyTo({ center: point.coordinate });
+					popup = {
+						lat: point.coordinate[1],
+						lng: point.coordinate[0],
+						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}</p>`
+					};
+				}}
+			>
+				{#if point.feature.brand !== null}
+					{point.feature.brand}
+				{:else}
+					{point.feature.name}
+				{/if}
+				({Math.round(point.distance * 1000)} m)
+			</p>
+		{/each}
 		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
 	</div>
 {/if}
