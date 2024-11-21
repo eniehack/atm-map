@@ -371,7 +371,7 @@
 		{/each}
 	</select>-->
 </div>
-{#if isTextFieldFocused && typeof query !== 'undefined' && query.length == 0}
+{#if isTextFieldFocused && ((typeof query !== 'undefined' && query.length == 0) || typeof query === "undefined")}
 	<div
 		class="absolute top-28 left-4 w-64 p-2 bg-gray-100 border border-gray-300 rounded shadow text-gray-600"
 		transition:fade
