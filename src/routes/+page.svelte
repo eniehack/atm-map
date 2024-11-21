@@ -11,6 +11,7 @@
 		FillLayer,
 		LineLayer
 	} from 'svelte-maplibre-gl';
+	import maplibregl from 'maplibre-gl';
 	import { osm } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
@@ -232,6 +233,12 @@
 	$effect(() => {
 		Promise.all([fetchAtmData(), fetchConvenienceData()]).then(() => {
 			handleQuery('');
+			map?.loadImage(`${base}/icon-atm.png`).then((img) => {
+				map?.addImage('icon-atm', img.data, { sdf: true });
+			});
+			map?.loadImage(`${base}/icon-convenience.png`).then((img) => {
+				map?.addImage('icon-convenience', img.data, { sdf: true });
+			});
 		});
 	});
 
@@ -263,7 +270,7 @@
 	];
 	let thresholdDistance = $state<number>(0.1);
 
-	let map: maplibregl.Map | undefined = $state(undefined);
+	let map = $state<maplibregl.Map | undefined>(undefined);
 
 	let circleFromUserPosition: any = $derived.by(() => {
 		if (typeof userLocation === 'undefined')
@@ -307,17 +314,7 @@
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
-				paint={{
-					'circle-color': [
-						'case',
-						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
-						'red',
-						'#FFC300'
-					],
-					'circle-opacity': 0.8,
-					'circle-stroke-color': 'white',
-					'circle-stroke-width': 1
-				}}
+				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
 					popup = {
 						lat: e.lngLat.lat,
@@ -328,6 +325,21 @@
 								: ''
 					};
 					map?.flyTo({ center: e.lngLat });
+				}}
+			/>
+			<SymbolLayer
+				paint={{
+					'icon-color': [
+						'case',
+						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						'red',
+						'#FFC300'
+					]
+				}}
+				layout={{
+					'icon-image': 'icon-atm',
+					'icon-size': 0.6,
+					'icon-allow-overlap': true
 				}}
 			/>
 			<SymbolLayer
@@ -343,24 +355,8 @@
 			/>
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
-			<SymbolLayer
-				layout={{
-					'text-font': ['Noto Sans Bold'],
-					'text-field': '{brand}',
-					'text-offset': [0, 1]
-				}}
-				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
-				}}
-			/>
 			<CircleLayer
-				paint={{
-					'circle-color': 'blue',
-					'circle-opacity': 0.8,
-					'circle-stroke-color': 'gray',
-					'circle-stroke-width': 1
-				}}
+				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
 					popup = {
 						lat: e.lngLat.lat,
@@ -370,6 +366,33 @@
 								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
 								: ''
 					};
+					map?.flyTo({ center: e.lngLat });
+				}}
+			/>
+			<SymbolLayer
+				paint={{
+					'icon-color': [
+						'case',
+						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						'red',
+						'blue'
+					]
+				}}
+				layout={{
+					'icon-image': 'icon-convenience',
+					'icon-size': 0.6,
+					'icon-allow-overlap': true
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					'text-font': ['Noto Sans Bold'],
+					'text-field': '{brand}',
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
 				}}
 			/>
 		</GeoJSONSource>
