@@ -21,26 +21,6 @@
 		lat: number;
 		content: string;
 	};
-
-	const brands = [
-		{
-			name: 'seven',
-			displayName: ['セブン-イレブン']
-		},
-		{
-			name: 'lawson',
-			displayName: ['ローソン', 'LAWSON']
-		},
-		{
-			name: 'familymart',
-			displayName: ['ファミリーマート', 'FamilyMart']
-		},
-		{
-			name: 'seicomart',
-			displayName: ['セイコーマート', 'Seicomart']
-		}
-	];
-	let convenienceSelectedBrand = $state();
 	let popup = $state<null | PopupArgument>(null);
 
 	type LatLng = [number, number];
@@ -194,51 +174,51 @@
 	});
 </script>
 
-<MapLibre
-	class="h-[60vh] min-h-[300px]"
-	style={osm}
-	zoom={4}
-	center={{ lng: 141.350331, lat: 43.068643 }}
->
-	<NavigationControl />
-	<ScaleControl />
-	<GeolocateControl
-		trackUserLocation={true}
-		ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
-	/>
-	<GeoJSONSource data={filteredAtmData as any}>
-		<CircleLayer
-			paint={{
-				'circle-color': '#FFC300',
-				'circle-opacity': 0.8,
-				'circle-stroke-color': 'white',
-				'circle-stroke-width': 1
-			}}
-			onclick={(e) => {
-				popup = {
-					lat: e.lngLat.lat,
-					lng: e.lngLat.lng,
-					content:
-						typeof e.features !== 'undefined'
-							? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-							: ''
-				};
-			}}
+<div class="fixed bottom-0 top-14">
+	<MapLibre
+		class="h-full w-screen"
+		style={osm}
+		zoom={4}
+		center={{ lng: 141.350331, lat: 43.068643 }}
+	>
+		<NavigationControl />
+		<ScaleControl />
+		<GeolocateControl
+			trackUserLocation={true}
+			ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
 		/>
-		<SymbolLayer
-			layout={{
-				'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
-				'text-font': ['Open Sans Bold'],
-				'text-offset': [0, 1]
-			}}
-			paint={{
-				'text-halo-width': 2,
-				'text-halo-color': 'white'
-			}}
-		/>
-	</GeoJSONSource>
-	<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
-		{#if convenienceSelectedBrand == 'lawson'}
+		<GeoJSONSource data={filteredAtmData as any}>
+			<CircleLayer
+				paint={{
+					'circle-color': '#FFC300',
+					'circle-opacity': 0.8,
+					'circle-stroke-color': 'white',
+					'circle-stroke-width': 1
+				}}
+				onclick={(e) => {
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								: ''
+					};
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
+					'text-font': ['Open Sans Bold'],
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+			/>
+		</GeoJSONSource>
+		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<SymbolLayer
 				layout={{
 					'text-font': ['Noto Sans JP Bold'],
@@ -249,13 +229,6 @@
 					'text-halo-width': 2,
 					'text-halo-color': 'white'
 				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'ローソン'],
-					['==', ['get', 'name'], 'ローソン'],
-					['==', ['get', 'brand'], 'LAWSON'],
-					['==', ['get', 'name'], 'LAWSON']
-				]}
 			/>
 			<CircleLayer
 				paint={{
@@ -264,13 +237,6 @@
 					'circle-stroke-color': 'gray',
 					'circle-stroke-width': 1
 				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'ローソン'],
-					['==', ['get', 'name'], 'ローソン'],
-					['==', ['get', 'brand'], 'LAWSON'],
-					['==', ['get', 'name'], 'LAWSON']
-				]}
 				onclick={(e) => {
 					popup = {
 						lat: e.lngLat.lat,
@@ -282,76 +248,14 @@
 					};
 				}}
 			/>
-		{:else if convenienceSelectedBrand == 'seven'}
-			<CircleLayer
-				paint={{
-					'circle-color': 'red',
-					'circle-opacity': 0.8,
-					'circle-stroke-color': 'gray',
-					'circle-stroke-width': 1
-				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'セブン-イレブン'],
-					['==', ['get', 'name'], 'セブン-イレブン'],
-					['==', ['get', 'brand'], '7-ELEVEN'],
-					['==', ['get', 'name'], '7-ELEVEN']
-				]}
-				onclick={(e) => {
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-								: ''
-					};
-				}}
-			/>
-			<SymbolLayer
-				layout={{
-					'text-font': ['Open Sans Bold'],
-					'text-field': '{brand}',
-					'text-offset': [0, 1]
-				}}
-				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
-				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'セブン-イレブン'],
-					['==', ['get', 'name'], 'セブン-イレブン'],
-					['==', ['get', 'brand'], '7-ELEVEN'],
-					['==', ['get', 'name'], '7-ELEVEN']
-				]}
-			/>
-		{:else if convenienceSelectedBrand == 'familymart'}
-			<CircleLayer
-				paint={{
-					'circle-color': 'green',
-					'circle-opacity': 0.8,
-					'circle-stroke-color': 'gray',
-					'circle-stroke-width': 1
-				}}
-				filter={[
-					'any',
-					['==', ['get', 'brand'], 'ファミリーマート'],
-					['==', ['get', 'name'], 'ファミリーマート'],
-					['==', ['get', 'brand'], 'FamilyMart'],
-					['==', ['get', 'name'], 'FamilyMart']
-				]}
-				onclick={(e) => {
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-								: ''
-					};
-				}}
-			/>
+		</GeoJSONSource>
+		{#if popup !== null}
+			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
+				>{@html popup.content}</Popup
+			>
+		{/if}
+	</MapLibre>
+</div>
 			<SymbolLayer
 				layout={{
 					'text-font': ['Open Sans Bold'],
