@@ -139,41 +139,37 @@
 	const findNearestPoint = () => {
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...atm.features, ...convenience.features];
-		let minDistancePoint: {
-			distance: number;
-			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
-		} = { distance: Infinity, feature: null };
+		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const filteredPoints = [] as { distance: number; feature: Record<string, string | null> }[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
-			if (d < minDistancePoint.distance) {
-				minDistancePoint = {
+			if (d < thresholdDistance) {
+				filteredPoints.push({
 					distance: d,
 					feature: point.properties
-				};
+				});
 			}
 		});
-		return minDistancePoint;
+		filteredPoints.sort((a, b) => a.distance - b.distance);
+		return filteredPoints.slice(0, 9);
 	};
 	const findNearestPointWithQuery = () => {
 		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined')
 			return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
-		let minDistancePoint: {
-			distance: number;
-			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
-		} = { distance: Infinity, feature: null };
+		const filteredPoints = [] as { distance: number; feature: Record<string, string | null> }[];
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
-			if (d < minDistancePoint.distance) {
-				minDistancePoint = {
+			if (d < thresholdDistance) {
+				filteredPoints.push({
 					distance: d,
 					feature: point.properties
-				};
+				});
 			}
 		});
-		return minDistancePoint;
+		filteredPoints.sort((a, b) => a.distance - b.distance);
+		return filteredPoints.slice(0, 9);
 	};
 
 	let filteredAtmData = $derived.by(() => {
@@ -217,6 +213,35 @@
 		fetchAtmData();
 		fetchConvenienceData();
 	});
+
+	const distances = [
+		{
+			name: '何m圏内のATMを探しますか？',
+			value: undefined
+		},
+		{
+			name: '100m',
+			value: 0.1
+		},
+		{
+			name: '200m',
+			value: 0.2
+		},
+		{
+			name: '500m',
+			value: 0.5
+		},
+		{
+			name: '1km',
+			value: 1
+		},
+		{
+			name: '5km',
+			value: 5
+		}
+	];
+	let thresholdDistance = $state<number>(0.1);
+	$inspect(thresholdDistance);
 </script>
 
 <div class="fixed bottom-0 top-14">
@@ -311,6 +336,19 @@
 		onfocus={() => (isTextFieldFocused = true)}
 		onblur={() => (isTextFieldFocused = false)}
 	/>
+	<select
+		id="near-threshold"
+		onchange={(e) => {
+			if (e.target !== null) {
+				// @ts-ignore
+				thresholdDistance = Number(e.target.value);
+			}
+		}}
+	>
+		{#each distances as d (d.name)}
+			<option value={d.value}>{d.name}</option>
+		{/each}
+	</select>
 	<!--<select
 		name="brand"
 		id="select-brand"
@@ -335,16 +373,18 @@
 	</div>
 {/if}
 
-{#if typeof nearPoint !== 'undefined' && nearPoint !== null && nearPoint.feature !== null}
+{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 	<div class="absolute bottom-14 left-2">
-		<p class="bg-red-200 p-2">
-			{#if nearPoint.feature.brand !== null}
-				{nearPoint.feature.brand}
-			{:else}
-				{nearPoint.feature.name}
-			{/if}
-			({Math.round(nearPoint.distance * 1000)} m)
-		</p>
+		{#each nearPoint as point}
+			<p class="bg-red-200 p-2">
+				{#if point.feature.brand !== null}
+					{point.feature.brand}
+				{:else}
+					{point.feature.name}
+				{/if}
+				({Math.round(point.distance * 1000)} m)
+			</p>
+		{/each}
 		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
 	</div>
 {/if}
