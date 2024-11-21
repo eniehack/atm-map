@@ -46,7 +46,7 @@
 		['大和ネクスト銀行', {}],
 		['auじぶん銀行', {}],
 		['住信SBIネット銀行', {}],
-		['ゆうちょ銀行', {$or: [{name: "郵便局"}, {brand: "ゆうちょ銀行"}]}]
+		['ゆうちょ銀行', { $or: [{ name: '郵便局' }, { brand: 'ゆうちょ銀行' }] }]
 	]);
 
 	type LatLng = [number, number];
@@ -140,34 +140,41 @@
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...atm.features, ...convenience.features];
-		let minDistancePoint: {distance: number, feature: {brand: string | null, opening_hours: string | null, name: string | null} | null} = {distance: Infinity, feature: null}
+		let minDistancePoint: {
+			distance: number;
+			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
+		} = { distance: Infinity, feature: null };
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
 			if (d < minDistancePoint.distance) {
 				minDistancePoint = {
 					distance: d,
-					feature: point.properties,
-				}
+					feature: point.properties
+				};
 			}
 		});
 		return minDistancePoint;
 	};
 	const findNearestPointWithQuery = () => {
-		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined') return null;
+		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined')
+			return null;
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
-		let minDistancePoint: {distance: number, feature: {brand: string | null, opening_hours: string | null, name: string | null} | null} = {distance: Infinity, feature: null}
+		let minDistancePoint: {
+			distance: number;
+			feature: { brand: string | null; opening_hours: string | null; name: string | null } | null;
+		} = { distance: Infinity, feature: null };
 		target.forEach((point) => {
 			const d = distance(userLocation, point.geometry.coordinates);
 			if (d < minDistancePoint.distance) {
 				minDistancePoint = {
 					distance: d,
-					feature: point.properties,
-				}
+					feature: point.properties
+				};
 			}
 		});
 		return minDistancePoint;
-	}
+	};
 
 	let filteredAtmData = $derived.by(() => {
 		if (typeof atmIndex === 'undefined') return createGeoJsonFromIndex([]);
@@ -198,10 +205,14 @@
 		return createGeoJsonFromIndex(result);
 	});
 	let nearPoint = $derived.by(() => {
-		if (query === "undefined" || query === "") {
+		if (query === 'undefined' || query === '') {
 			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
-			return findNearestPoint()
+			return findNearestPoint();
 		}
+		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined')
+			return;
+		return findNearestPointWithQuery();
+	});
 	$effect(() => {
 		fetchAtmData();
 		fetchConvenienceData();
@@ -311,19 +322,15 @@
 		{/each}
 	</select>-->
 </div>
-{#if isTextFieldFocused && typeof query !== "undefined" && query.length == 0}
+{#if isTextFieldFocused && typeof query !== 'undefined' && query.length == 0}
 	<div
 		class="absolute top-28 left-4 w-64 p-2 bg-gray-100 border border-gray-300 rounded shadow text-gray-600"
 		transition:fade
 	>
+		<p>あいまい検索に対応しています。例: 「ファミマ」→ファミリーマートが表示される、など。</p>
+		<p>完全一致させたい場合は「"」で囲ってください。例: 「"北海道銀行"」</p>
 		<p>
-		あいまい検索に対応しています。例: 「ファミマ」→ファミリーマートが表示される、など。
-		</p>
-		<p>
-		完全一致させたい場合は「"」で囲ってください。例: 「"北海道銀行"」
-		</p>
-		<p>
-		ネット銀行などATMを持たない一部の金融機関もそのまま銀行名を入力することで対応するATMを検索できます。
+			ネット銀行などATMを持たない一部の金融機関もそのまま銀行名を入力することで対応するATMを検索できます。
 		</p>
 	</div>
 {/if}
