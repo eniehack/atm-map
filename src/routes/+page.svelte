@@ -343,7 +343,7 @@
 				}}
 			/>
 		</GeoJSONSource>
-		<GeoJSONSource data={filteredConvenienceData as any}>
+		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<CircleLayer
 				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
