@@ -286,7 +286,7 @@
 	let nowAvailableFilterFlag = $state(false);
 	const filterByOpeningHour = (targetPoints: GeoJSON, targetDate: Date): GeoJSON => {
 		const feat = targetPoints.features.filter((val) => {
-			if (val.properties.opening_hours === null) return true;
+			if (val.properties.opening_hours === null) return false;
 			try {
 				const oh = new openingHours(val.properties.opening_hours, null, {
 					mode: 0,
@@ -297,10 +297,10 @@
 				});
 				return oh.getState(targetDate);
 			} catch (error) {
-				return undefined
+				return false;
 			}
 		});
-		
+
 		return {
 			type: 'FeatureCollection',
 			name: 'searchResults',
