@@ -9,7 +9,12 @@ export const osm: StyleSpecification = {
 	bearing: 0,
 	pitch: 0,
 	sources: {
-		openmaptiles: { type: 'vector', url: "pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles", attribution: "<a href=\"https://www.openmaptiles.org/\" target=\"_blank\">&copy; OpenMapTiles</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>"},
+		openmaptiles: {
+			type: 'vector',
+			url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles',
+			attribution:
+				'<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+		},
 		takeshima: { type: 'vector', url: 'https://tile.openstreetmap.jp/data/takeshima.json' },
 		hoppo: { type: 'vector', url: 'https://tile.openstreetmap.jp/data/hoppo.json' }
 	},
