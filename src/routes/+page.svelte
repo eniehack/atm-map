@@ -280,6 +280,32 @@
 		const buffered = buffer(p, thresholdDistance);
 		return buffered;
 	});
+
+	let nowAvailableFilterFlag = $state(false);
+	const filterByOpeningHour = (targetPoints: GeoJSON, targetDate: Date): GeoJSON => {
+		const feat = targetPoints.features.filter((val) => {
+			if (val.properties.opening_hours === null) return true;
+			try {
+				const oh = new openingHours(val.properties.opening_hours, null, {
+					mode: 0,
+					tag_key: undefined,
+					map_value: undefined,
+					warnings_severity: undefined,
+					locale: 'JP'
+				});
+				return oh.getState(targetDate);
+			} catch (error) {
+				return undefined
+			}
+		});
+		
+		return {
+			type: 'FeatureCollection',
+			name: 'searchResults',
+			crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+			features: feat
+		};
+	};
 </script>
 
 <div class="fixed bottom-0 top-14">
@@ -324,12 +350,13 @@
 					'circle-stroke-width': 1
 				}}
 				onclick={(e) => {
+					const oh = new openingHours(e.features[0].properties['opening_hours']);
 					popup = {
 						lat: e.lngLat.lat,
 						lng: e.lngLat.lng,
 						content:
 							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}（${oh.getStateString()}）</p>`
 								: ''
 					};
 					map?.flyTo({ center: e.lngLat });
@@ -399,19 +426,22 @@
 		onfocus={() => (isTextFieldFocused = true)}
 		onblur={() => (isTextFieldFocused = false)}
 	/>
-	<select
-		id="near-threshold"
-		onchange={(e) => {
-			if (e.target !== null) {
-				// @ts-ignore
-				thresholdDistance = Number(e.target.value);
-			}
-		}}
-	>
-		{#each distances as d (d.name)}
-			<option value={d.value}>{d.name}</option>
-		{/each}
-	</select>
+	<div>
+		<label for="now-available">現在営業中</label>
+		<input
+			type="checkbox"
+			name="now-available"
+			bind:checked={nowAvailableFilterFlag}
+			onchange={() => {
+				if (typeof atm === 'undefined') return;
+				if (nowAvailableFilterFlag) {
+					filteredAtmData = filterByOpeningHour(filteredAtmData, new Date());
+				} else {
+					handleQuery(query ?? '');
+				}
+			}}
+		/>
+	</div>
 	<!--<select
 		name="brand"
 		id="select-brand"
@@ -436,6 +466,21 @@
 	</div>
 {/if}
 
+<div class="absolute bottom-14 left-2 w-64">
+	<select
+		id="near-threshold"
+		onchange={(e) => {
+			if (e.target !== null) {
+				// @ts-ignore
+				thresholdDistance = Number(e.target.value);
+			}
+		}}
+	>
+		{#each distances as d (d.name)}
+			<option value={d.value}>{d.name}</option>
+		{/each}
+	</select>
+</div>
 {#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 	<div class="absolute bottom-14 left-2">
 		{#each nearPoint as point}
@@ -443,10 +488,22 @@
 				class="bg-red-200 p-2"
 				onclick={() => {
 					map?.flyTo({ center: point.coordinate });
+					const oh =
+						point.feature.opening_hours !== null
+							? new openingHours(point.feature.opening_hours)
+							: null;
+					if (oh !== null) {
+						//console.log(oh.getIterator())
+						//console.log(oh.getOpenIntervals())
+						var from = new Date('08 Jan 2012');
+						var to = new Date('15 Jan 2012');
+						const intervals = oh.getOpenIntervals(from, to);
+						console.log(intervals);
+					}
 					popup = {
 						lat: point.coordinate[1],
 						lng: point.coordinate[0],
-						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}</p>`
+						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
 					};
 				}}
 			>
