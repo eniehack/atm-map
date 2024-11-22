@@ -419,7 +419,7 @@
 		{/if}
 	</MapLibre>
 </div>
-<div class="absolute top-16 left-2 w-64">
+<div class="absolute top-16 left-2 bg-white rounded-lg p-2">
 	<input
 		type="text"
 		id="q"
