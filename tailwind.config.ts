@@ -7,6 +7,7 @@ export default {
 	theme: {
 		extend: {}
 	},
+	darkMode: 'selector',
 
 	plugins: [typography]
 } satisfies Config;

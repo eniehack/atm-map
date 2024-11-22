@@ -12,7 +12,7 @@
 		LineLayer
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { osm } from './style';
+	import { osm, dark } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
@@ -226,7 +226,7 @@
 	}, 500); // 500ms
 
 	let nearPoint = $derived.by(() => {
-		if (query === 'undefined' || query === '') {
+		if (typeof query === 'undefined' || query.length === 0) {
 			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
 			return findNearestPoint();
 		}
@@ -248,10 +248,6 @@
 	});
 
 	const distances = [
-		{
-			name: '何m圏内のATMを探しますか？',
-			value: undefined
-		},
 		{
 			name: '100m',
 			value: 0.1
@@ -291,7 +287,7 @@
 	let nowAvailableFilterFlag = $state(false);
 	const filterByOpeningHour = (targetPoints: GeoJSON, targetDate: Date): GeoJSON => {
 		const feat = targetPoints.features.filter((val) => {
-			if (val.properties.opening_hours === null) return true;
+			if (val.properties.opening_hours === null) return false;
 			try {
 				const oh = new openingHours(val.properties.opening_hours, null, {
 					mode: 0,
@@ -302,7 +298,7 @@
 				});
 				return oh.getState(targetDate);
 			} catch (error) {
-				return undefined;
+				return false;
 			}
 		});
 
@@ -313,13 +309,15 @@
 			features: feat
 		};
 	};
+
+	let isDarkMode = $state(false);
 </script>
 
 <div class="fixed bottom-0 top-14">
 	<MapLibre
 		bind:map
 		class="h-full w-screen"
-		style={osm}
+		style={isDarkMode ? dark : osm}
 		zoom={4}
 		center={{ lng: 141.350331, lat: 43.068643 }}
 	>
@@ -436,7 +434,7 @@
 		{/if}
 	</MapLibre>
 </div>
-<div class="absolute top-16 left-2 w-64">
+<div class="absolute top-16 left-2 bg-white rounded-lg p-2">
 	<input
 		type="text"
 		id="q"
@@ -489,44 +487,50 @@
 		</p>
 	</div>
 {/if}
-
-<div class="absolute bottom-16 left-2">
-	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
-		{#each nearPoint as point}
-			<p
-				class="bg-red-200 md:p-2 p-1.5"
-				onclick={() => {
-					map?.flyTo({ center: point.coordinate });
-					const oh =
-						point.feature.opening_hours !== null
-							? new openingHours(point.feature.opening_hours)
-							: null;
-					if (oh !== null) {
-						//console.log(oh.getIterator())
-						//console.log(oh.getOpenIntervals())
-						var from = new Date('08 Jan 2012');
-						var to = new Date('15 Jan 2012');
-						const intervals = oh.getOpenIntervals(from, to);
-						console.log(intervals);
-					}
-					popup = {
-						lat: point.coordinate[1],
-						lng: point.coordinate[0],
-						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
-					};
-				}}
+<div
+	class="absolute top-[13rem] right-2.5 bg-white rounded size-[29px]"
+	onclick={() => {
+		isDarkMode = !isDarkMode;
+		if (isDarkMode) {
+			document.body.className = 'dark';
+		} else {
+			document.body.className = '';
+		}
+	}}
+>
+	<span class="grid place-items-center p-1 text-red-200">
+		{#if isDarkMode}
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="100%"
+				height="100%"
+				fill="#2D7BBE"
+				class="bi bi-moon-fill"
+				viewBox="0 0 16 16"
 			>
-				{#if point.feature.brand !== null}
-					{point.feature.brand}
-				{:else}
-					{point.feature.name}
-				{/if}
-				({Math.round(point.distance * 1000)} m)
-			</p>
-		{/each}
-		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
-	{/if}
-	<div class="">
+				<path
+					d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"
+				/>
+			</svg>
+		{:else}
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="100%"
+				height="100%"
+				fill="#ffc300"
+				class="bi bi-sun-fill"
+				viewBox="0 0 16 16"
+			>
+				<path
+					d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"
+				/>
+			</svg>
+		{/if}
+	</span>
+</div>
+<div class="absolute bottom-10 left-2 bg-white rounded-lg p-2">
+	<p class="font-semibold pb-2">現在地から近いATMを検索する</p>
+	<div class="pb-2">
 		<select
 			id="near-threshold"
 			onchange={(e) => {
@@ -537,8 +541,52 @@
 			}}
 		>
 			{#each distances as d (d.name)}
-				<option value={d.value}>{d.name}</option>
+				<option value={d.value}>{d.name} 圏内</option>
 			{/each}
 		</select>
 	</div>
+	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
+		{#if nearPoint.length !== 0}
+			<div class="overflow-y-auto h-[160px]">
+				{#each nearPoint as point}
+					<div
+						role="button"
+						tabindex="0"
+						class="block bg-red-200 md:p-1.5 p-1 cursor-pointer hover:bg-red-400"
+						onkeydown={() => {}}
+						onclick={() => {
+							map?.flyTo({ center: point.coordinate });
+							const oh =
+								point.feature.opening_hours !== null
+									? new openingHours(point.feature.opening_hours)
+									: null;
+							if (oh !== null) {
+								//console.log(oh.getIterator())
+								//console.log(oh.getOpenIntervals())
+								var from = new Date('08 Jan 2012');
+								var to = new Date('15 Jan 2012');
+								const intervals = oh.getOpenIntervals(from, to);
+								console.log(intervals);
+							}
+							popup = {
+								lat: point.coordinate[1],
+								lng: point.coordinate[0],
+								content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
+							};
+						}}
+					>
+						{#if point.feature.brand !== null}
+							{point.feature.brand}
+						{:else}
+							{point.feature.name}
+						{/if}
+						({Math.round(point.distance * 1000)} m)
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<p>なにもありません。検索範囲を広げてみてください。</p>
+		{/if}
+		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
+	{/if}
 </div>
