@@ -243,10 +243,6 @@
 
 	const distances = [
 		{
-			name: '何m圏内のATMを探しますか？',
-			value: undefined
-		},
-		{
 			name: '100m',
 			value: 0.1
 		},
