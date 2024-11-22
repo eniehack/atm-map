@@ -12,7 +12,7 @@
 		LineLayer
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
-	import { osm } from './style';
+	import { osm, dark } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
@@ -23,6 +23,7 @@
 	import { debounce } from 'es-toolkit';
 	import { Protocol } from 'pmtiles';
 	import openingHours from 'opening_hours';
+	import moon from "$lib/moon-fill.svg"
 
 	let protocol = new Protocol();
 	maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -307,13 +308,15 @@
 			features: feat
 		};
 	};
+
+	let isDarkMode = $state(false)
 </script>
 
 <div class="fixed bottom-0 top-14">
 	<MapLibre
 		bind:map
 		class="h-full w-screen"
-		style={osm}
+		style={isDarkMode ? dark : osm}
 		zoom={4}
 		center={{ lng: 141.350331, lat: 43.068643 }}
 	>
@@ -474,44 +477,21 @@
 		</p>
 	</div>
 {/if}
-
-<div class="absolute bottom-16 left-2">
-	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
-		{#each nearPoint as point}
-			<p
-				class="bg-red-200 md:p-2 p-1.5"
-				onclick={() => {
-					map?.flyTo({ center: point.coordinate });
-					const oh =
-						point.feature.opening_hours !== null
-							? new openingHours(point.feature.opening_hours)
-							: null;
-					if (oh !== null) {
-						//console.log(oh.getIterator())
-						//console.log(oh.getOpenIntervals())
-						var from = new Date('08 Jan 2012');
-						var to = new Date('15 Jan 2012');
-						const intervals = oh.getOpenIntervals(from, to);
-						console.log(intervals);
-					}
-					popup = {
-						lat: point.coordinate[1],
-						lng: point.coordinate[0],
-						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
-					};
-				}}
-			>
-				{#if point.feature.brand !== null}
-					{point.feature.brand}
-				{:else}
-					{point.feature.name}
-				{/if}
-				({Math.round(point.distance * 1000)} m)
-			</p>
-		{/each}
-		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
-	{/if}
-	<div class="">
+<div class="absolute top-[13rem] right-2.5 bg-white rounded size-[29px]"
+	onclick={() => {
+		if (isDarkMode) {
+			document.body.className = "dark"
+		} else {
+			document.body.className = ""
+		}
+	}}>
+	<span class="grid place-items-center">
+		<img src={moon} />
+	</span>
+</div>
+<div class="absolute bottom-10 left-2 bg-white rounded-lg p-2">
+	<p class="font-semibold pb-2">現在地から近いATMを検索する</p>
+	<div class="pb-2">
 		<select
 			id="near-threshold"
 			onchange={(e) => {
@@ -522,8 +502,52 @@
 			}}
 		>
 			{#each distances as d (d.name)}
-				<option value={d.value}>{d.name}</option>
+				<option value={d.value}>{d.name} 圏内</option>
 			{/each}
 		</select>
 	</div>
+	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
+		{#if nearPoint.length !== 0}
+			<div class="overflow-y-auto h-[160px]">
+			{#each nearPoint as point}
+				<div
+					role="button"
+					tabindex="0"
+					class="block bg-red-200 md:p-1.5 p-1 cursor-pointer hover:bg-red-400"
+					onkeydown={() => {}}
+					onclick={() => {
+						map?.flyTo({ center: point.coordinate });
+						const oh =
+							point.feature.opening_hours !== null
+								? new openingHours(point.feature.opening_hours)
+								: null;
+						if (oh !== null) {
+							//console.log(oh.getIterator())
+							//console.log(oh.getOpenIntervals())
+							var from = new Date('08 Jan 2012');
+							var to = new Date('15 Jan 2012');
+							const intervals = oh.getOpenIntervals(from, to);
+							console.log(intervals);
+						}
+						popup = {
+							lat: point.coordinate[1],
+							lng: point.coordinate[0],
+							content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
+						};
+					}}
+				>
+					{#if point.feature.brand !== null}
+						{point.feature.brand}
+					{:else}
+						{point.feature.name}
+					{/if}
+					({Math.round(point.distance * 1000)} m)
+				</div>
+			{/each}
+			</div>
+		{:else}
+			<p>なにもありません。検索範囲を広げてみてください。</p>
+		{/if}
+		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
+	{/if}
 </div>
