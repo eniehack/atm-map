@@ -1,3 +1,8 @@
+<script lang="ts">
+	import { base} from "$app/paths";
+	const title = "このサイトへ貢献する | ATMマップ"
+</script>
+
 <article>
 	<h1>このサイトへ貢献する</h1>
 	<section>
@@ -28,3 +33,16 @@
 		</p>
 	</section>
 </article>
+
+<svelte:head>
+	<title>{title}</title>
+	<meta name="og:title" content={title} />
+	<meta name="og:type" content="website" />
+	<meta name="og:url" content={`${base}/about`} />
+	<meta name="og:locale" content="ja-JP" />
+	<meta name="og:description" content="身近にあるATMの場所を一覧できるサイト" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content="身近にあるATMの場所を一覧できるサイト" />
+	<meta name="twitter:creators" content="@eniehack" />
+	<meta name="twitter:card" content="summary" />
+</svelte:head>

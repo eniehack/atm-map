@@ -311,7 +311,21 @@
 	};
 
 	let isDarkMode = $state(false);
+	const title = "ATMマップ"
 </script>
+
+<svelte:head>
+	<title>{title}</title>
+	<meta name="og:title" content={title} />
+	<meta name="og:type" content="website" />
+	<meta name="og:url" content={base} />
+	<meta name="og:locale" content="ja-JP" />
+	<meta name="og:description" content="身近にあるATMの場所を一覧できるサイト" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content="身近にあるATMの場所を一覧できるサイト" />
+	<meta name="twitter:creators" content="@eniehack" />
+	<meta name="twitter:card" content="summary" />
+</svelte:head>
 
 <div class="fixed bottom-0 top-14">
 	<MapLibre
