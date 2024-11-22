@@ -21,6 +21,11 @@
 	import { point } from '@turf/helpers';
 	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
+	import { Protocol } from 'pmtiles';
+	import openingHours from 'opening_hours';
+
+	let protocol = new Protocol();
+	maplibregl.addProtocol('pmtiles', protocol.tile);
 
 	type PopupArgument = {
 		lng: number;
@@ -178,7 +183,7 @@
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
-			const d = distance(userLocation, point.geometry.coordinates);
+			const d = distance(userLocation!, point.geometry.coordinates);
 			if (d < thresholdDistance) {
 				filteredPoints.push({
 					distance: d,
@@ -282,6 +287,32 @@
 		const buffered = buffer(p, thresholdDistance);
 		return buffered;
 	});
+
+	let nowAvailableFilterFlag = $state(false);
+	const filterByOpeningHour = (targetPoints: GeoJSON, targetDate: Date): GeoJSON => {
+		const feat = targetPoints.features.filter((val) => {
+			if (val.properties.opening_hours === null) return true;
+			try {
+				const oh = new openingHours(val.properties.opening_hours, null, {
+					mode: 0,
+					tag_key: undefined,
+					map_value: undefined,
+					warnings_severity: undefined,
+					locale: 'JP'
+				});
+				return oh.getState(targetDate);
+			} catch (error) {
+				return undefined;
+			}
+		});
+
+		return {
+			type: 'FeatureCollection',
+			name: 'searchResults',
+			crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+			features: feat
+		};
+	};
 </script>
 
 <div class="fixed bottom-0 top-14">
@@ -312,49 +343,7 @@
 				}}
 			/>
 		</GeoJSONSource>
-		<GeoJSONSource data={filteredAtmData as any}>
-			<CircleLayer
-				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
-				onclick={(e) => {
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-								: ''
-					};
-					map?.flyTo({ center: e.lngLat });
-				}}
-			/>
-			<SymbolLayer
-				paint={{
-					'icon-color': [
-						'case',
-						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
-						'red',
-						'#FFC300'
-					]
-				}}
-				layout={{
-					'icon-image': 'icon-atm',
-					'icon-size': 0.6,
-					'icon-allow-overlap': true
-				}}
-			/>
-			<SymbolLayer
-				layout={{
-					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
-					'text-font': ['Noto Sans Bold'],
-					'text-offset': [0, 1]
-				}}
-				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
-				}}
-			/>
-		</GeoJSONSource>
-		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
+		<GeoJSONSource data={filteredConvenienceData as any}>
 			<CircleLayer
 				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
@@ -396,6 +385,50 @@
 				}}
 			/>
 		</GeoJSONSource>
+		<GeoJSONSource data={filteredAtmData as any}>
+			<CircleLayer
+				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
+				onclick={(e) => {
+					const oh = new openingHours(e.features[0].properties['opening_hours']);
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}（${oh.getStateString()}）</p>`
+								: ''
+					};
+					map?.flyTo({ center: e.lngLat });
+				}}
+			/>
+			<SymbolLayer
+				paint={{
+					'icon-color': [
+						'case',
+						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						'red',
+						'#FFC300'
+					]
+				}}
+				layout={{
+					'icon-image': 'icon-atm',
+					'icon-size': 0.6,
+					'icon-allow-overlap': true
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
+					'text-font': ['Noto Sans Bold'],
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+			/>
+		</GeoJSONSource>
+
 		{#if popup !== null}
 			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
 				>{@html popup.content}</Popup
@@ -417,19 +450,22 @@
 		onfocus={() => (isTextFieldFocused = true)}
 		onblur={() => (isTextFieldFocused = false)}
 	/>
-	<select
-		id="near-threshold"
-		onchange={(e) => {
-			if (e.target !== null) {
-				// @ts-ignore
-				thresholdDistance = Number(e.target.value);
-			}
-		}}
-	>
-		{#each distances as d (d.name)}
-			<option value={d.value}>{d.name}</option>
-		{/each}
-	</select>
+	<div>
+		<label for="now-available">現在営業中</label>
+		<input
+			type="checkbox"
+			name="now-available"
+			bind:checked={nowAvailableFilterFlag}
+			onchange={() => {
+				if (typeof atm === 'undefined') return;
+				if (nowAvailableFilterFlag) {
+					filteredAtmData = filterByOpeningHour(filteredAtmData, new Date());
+				} else {
+					handleQuery(query ?? '');
+				}
+			}}
+		/>
+	</div>
 	<!--<select
 		name="brand"
 		id="select-brand"
@@ -454,17 +490,29 @@
 	</div>
 {/if}
 
-{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
-	<div class="absolute bottom-14 left-2">
+<div class="absolute bottom-16 left-2">
+	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 		{#each nearPoint as point}
 			<p
-				class="bg-red-200 p-2"
+				class="bg-red-200 md:p-2 p-1.5"
 				onclick={() => {
 					map?.flyTo({ center: point.coordinate });
+					const oh =
+						point.feature.opening_hours !== null
+							? new openingHours(point.feature.opening_hours)
+							: null;
+					if (oh !== null) {
+						//console.log(oh.getIterator())
+						//console.log(oh.getOpenIntervals())
+						var from = new Date('08 Jan 2012');
+						var to = new Date('15 Jan 2012');
+						const intervals = oh.getOpenIntervals(from, to);
+						console.log(intervals);
+					}
 					popup = {
 						lat: point.coordinate[1],
 						lng: point.coordinate[0],
-						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}</p>`
+						content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
 					};
 				}}
 			>
@@ -477,5 +525,20 @@
 			</p>
 		{/each}
 		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
+	{/if}
+	<div class="">
+		<select
+			id="near-threshold"
+			onchange={(e) => {
+				if (e.target !== null) {
+					// @ts-ignore
+					thresholdDistance = Number(e.target.value);
+				}
+			}}
+		>
+			{#each distances as d (d.name)}
+				<option value={d.value}>{d.name}</option>
+			{/each}
+		</select>
 	</div>
-{/if}
+</div>
