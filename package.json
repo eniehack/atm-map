@@ -32,6 +32,7 @@
 		"fuse.js": "^7.0.0",
 		"globals": "^15.0.0",
 		"maplibre-gl": "^4.7.1",
+		"pmtiles": "^3.2.1",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
 		"svelte": "^5.0.0",

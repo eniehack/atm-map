@@ -11,6 +11,7 @@
 		FillLayer,
 		LineLayer
 	} from 'svelte-maplibre-gl';
+	import maplibregl from 'maplibre-gl';
 	import { osm } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
@@ -20,6 +21,10 @@
 	import { point } from '@turf/helpers';
 	import { fade } from 'svelte/transition';
 	import { debounce } from 'es-toolkit';
+	import { Protocol } from 'pmtiles';
+	import openingHours from 'opening_hours';
+	let protocol = new Protocol();
+	maplibregl.addProtocol('pmtiles', protocol.tile);
 
 	type PopupArgument = {
 		lng: number;
