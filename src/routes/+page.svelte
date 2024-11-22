@@ -23,6 +23,7 @@
 	import { debounce } from 'es-toolkit';
 	import { Protocol } from 'pmtiles';
 	import openingHours from 'opening_hours';
+
 	let protocol = new Protocol();
 	maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -182,7 +183,7 @@
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
-			const d = distance(userLocation, point.geometry.coordinates);
+			const d = distance(userLocation!, point.geometry.coordinates);
 			if (d < thresholdDistance) {
 				filteredPoints.push({
 					distance: d,
@@ -336,6 +337,45 @@
 				}}
 			/>
 		</GeoJSONSource>
+		<GeoJSONSource data={filteredConvenienceData as any}>
+			<SymbolLayer
+				layout={{
+					'text-font': ['Noto Sans Bold'],
+					'text-field': '{brand}',
+					'text-offset': [0, 1]
+				}}
+				paint={{
+					'text-halo-width': 2,
+					'text-halo-color': 'white'
+				}}
+			/>
+			<CircleLayer
+				paint={{
+					'circle-color':
+						nearPoint !== null && typeof nearPoint !== 'undefined'
+							? [
+									'case',
+									['in', ['get', 'fid'], ['literal', nearPoint.map((val) => val.feature.fid)]],
+									'red',
+									'blue'
+								]
+							: 'blue',
+					'circle-opacity': 0.8,
+					'circle-stroke-color': 'gray',
+					'circle-stroke-width': 1
+				}}
+				onclick={(e) => {
+					popup = {
+						lat: e.lngLat.lat,
+						lng: e.lngLat.lng,
+						content:
+							typeof e.features !== 'undefined'
+								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
+								: ''
+					};
+				}}
+			/>
+		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
 				paint={{
@@ -371,37 +411,6 @@
 				paint={{
 					'text-halo-width': 2,
 					'text-halo-color': 'white'
-				}}
-			/>
-		</GeoJSONSource>
-		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
-			<SymbolLayer
-				layout={{
-					'text-font': ['Noto Sans Bold'],
-					'text-field': '{brand}',
-					'text-offset': [0, 1]
-				}}
-				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
-				}}
-			/>
-			<CircleLayer
-				paint={{
-					'circle-color': 'blue',
-					'circle-opacity': 0.8,
-					'circle-stroke-color': 'gray',
-					'circle-stroke-width': 1
-				}}
-				onclick={(e) => {
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-								: ''
-					};
 				}}
 			/>
 		</GeoJSONSource>
@@ -466,26 +475,11 @@
 	</div>
 {/if}
 
-<div class="absolute bottom-14 left-2 w-64">
-	<select
-		id="near-threshold"
-		onchange={(e) => {
-			if (e.target !== null) {
-				// @ts-ignore
-				thresholdDistance = Number(e.target.value);
-			}
-		}}
-	>
-		{#each distances as d (d.name)}
-			<option value={d.value}>{d.name}</option>
-		{/each}
-	</select>
-</div>
-{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
-	<div class="absolute bottom-14 left-2">
+<div class="absolute bottom-16 left-2">
+	{#if typeof nearPoint !== 'undefined' && nearPoint !== null}
 		{#each nearPoint as point}
 			<p
-				class="bg-red-200 p-2"
+				class="bg-red-200 md:p-2 p-1.5"
 				onclick={() => {
 					map?.flyTo({ center: point.coordinate });
 					const oh =
@@ -516,5 +510,20 @@
 			</p>
 		{/each}
 		<!-- TODO: ここをclickするとpopupが出てきてpanするとうれしい気がする -->
+	{/if}
+	<div class="">
+		<select
+			id="near-threshold"
+			onchange={(e) => {
+				if (e.target !== null) {
+					// @ts-ignore
+					thresholdDistance = Number(e.target.value);
+				}
+			}}
+		>
+			{#each distances as d (d.name)}
+				<option value={d.value}>{d.name}</option>
+			{/each}
+		</select>
 	</div>
-{/if}
+</div>
