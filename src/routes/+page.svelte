@@ -226,7 +226,7 @@
 	}, 500); // 500ms
 
 	let nearPoint = $derived.by(() => {
-		if (query === 'undefined' || query === '') {
+		if (typeof query === 'undefined' || query.length === 0) {
 			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
 			return findNearestPoint();
 		}
