@@ -311,7 +311,29 @@
 	};
 
 	let isDarkMode = $state(false);
-	const title = "ATMマップ"
+	const title = 'ATMマップ';
+
+	const createPopup = (
+		coord: { lng: number; lat: number },
+		feature: { opening_hours: string | undefined | null; name: string }
+	): { lng: number; lat: number; content: string } => {
+		let content = '';
+		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
+			content = `<p class="text-gray-500">営業時間不明</p>`;
+		} else {
+			const oh = new openingHours(feature.opening_hours);
+			if (oh.getState()) {
+				content = `<p class="text-green-500">営業中</p>`;
+			} else {
+				content = `<p class="text-red-500">営業時間外</p>`;
+			}
+		}
+		return {
+			lat: coord.lat,
+			lng: coord.lng,
+			content: `<p>${feature.name}</p>${content}`
+		};
+	};
 </script>
 
 <svelte:head>
@@ -359,14 +381,14 @@
 			<CircleLayer
 				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}</p>`
-								: ''
-					};
+					if (typeof e.features === 'undefined') return;
+					popup = createPopup(
+						{ lng: e.lngLat.lng, lat: e.lngLat.lat },
+						{
+							opening_hours: e.features[0].properties['opening_hours'],
+							name: e.features[0].properties['name']
+						}
+					);
 					map?.flyTo({ center: e.lngLat });
 				}}
 			/>
@@ -401,15 +423,8 @@
 			<CircleLayer
 				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
-					const oh = new openingHours(e.features[0].properties['opening_hours']);
-					popup = {
-						lat: e.lngLat.lat,
-						lng: e.lngLat.lng,
-						content:
-							typeof e.features !== 'undefined'
-								? `<p>${e.features[0].properties['name']}</p><p>営業時間: ${e.features[0].properties['opening_hours']}（${oh.getStateString()}）</p>`
-								: ''
-					};
+					if (typeof e.features === 'undefined') return;
+					popup = createPopup({ lng: e.lngLat.lng, lat: e.lngLat.lat }, e.features[0]);
 					map?.flyTo({ center: e.lngLat });
 				}}
 			/>
@@ -582,11 +597,10 @@
 								const intervals = oh.getOpenIntervals(from, to);
 								console.log(intervals);
 							}
-							popup = {
-								lat: point.coordinate[1],
-								lng: point.coordinate[0],
-								content: `<p>${point.feature.name}</p><p>営業時間: ${point.feature.opening_hours}${oh !== null ? '（' + oh.getState() + '）' : ''}</p>`
-							};
+							popup = createPopup(
+								{ lng: point.coordinate[0], lat: point.coordinate[1] },
+								{opening_hours: point.feature.opening_hours, name: point.feature.name}
+							);
 						}}
 					>
 						{#if point.feature.brand !== null}
