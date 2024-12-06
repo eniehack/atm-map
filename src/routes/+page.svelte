@@ -247,6 +247,10 @@
 				map?.addImage('icon-convenience', img.data, { sdf: true });
 			});
 		});
+		const darkmodeConfig = localStorage.getItem("atm-map.darkmode")
+		if (darkmodeConfig !== null) {
+			isDarkMode.set(JSON.parse(darkmodeConfig))
+		}
 	});
 
 	const distances = [

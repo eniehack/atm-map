@@ -11,6 +11,9 @@
             document.body.className = '';
         }
     })
+    isDarkMode.subscribe(mode => {
+        localStorage.setItem("atm-map.darkmode", JSON.stringify(mode))
+    })
 </script>
 
 <CustomControl position="top-right">
