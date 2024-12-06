@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 
-	const title = "about | ATMマップ"
+	const title = 'about | ATMマップ';
 </script>
 
 <article>

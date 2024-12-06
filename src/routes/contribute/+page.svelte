@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { base} from "$app/paths";
-	const title = "このサイトへ貢献する | ATMマップ"
+	import { base } from '$app/paths';
+	const title = 'このサイトへ貢献する | ATMマップ';
 </script>
 
 <article>
