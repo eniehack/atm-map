@@ -424,7 +424,13 @@
 				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
 				onclick={(e) => {
 					if (typeof e.features === 'undefined') return;
-					popup = createPopup({ lng: e.lngLat.lng, lat: e.lngLat.lat }, e.features[0]);
+					popup = createPopup(
+						{ lng: e.lngLat.lng, lat: e.lngLat.lat },
+						{
+							opening_hours: e.features[0].properties['opening_hours'],
+							name: e.features[0].properties['name']
+						}
+					);
 					map?.flyTo({ center: e.lngLat });
 				}}
 			/>
@@ -599,7 +605,7 @@
 							}
 							popup = createPopup(
 								{ lng: point.coordinate[0], lat: point.coordinate[1] },
-								{opening_hours: point.feature.opening_hours, name: point.feature.name}
+								{ opening_hours: point.feature.opening_hours, name: point.feature.name }
 							);
 						}}
 					>
