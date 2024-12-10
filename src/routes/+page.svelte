@@ -339,6 +339,31 @@
 			content: `<p>${feature.name}</p>${content}`
 		};
 	};
+	const iconLayerCommonProperty = {
+		paint: {
+		} as maplibregl.SymbolLayerSpecification["paint"],
+		layout: {
+			'icon-size': 0.6,
+			'icon-allow-overlap': true
+		} as maplibregl.SymbolLayerSpecification["layout"],
+	}
+	const labelLayerCommonProperty = {
+		layout: {
+			'text-font': ['Noto Sans Bold'],
+			'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
+			'text-offset': [0, 1]
+		} as maplibregl.SymbolLayerSpecification["layout"],
+		paint: {
+			'text-halo-width': 2,
+			'text-halo-color': 'white'
+		} as maplibregl.SymbolLayerSpecification["paint"],
+	}
+	const circleLayerCommonProperty = {
+		paint: {
+			'circle-color': 'white',
+			'circle-radius': 15
+		}
+	}
 </script>
 
 <svelte:head>
@@ -385,7 +410,7 @@
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<CircleLayer
-				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
+				paint={{ ...circleLayerCommonProperty.paint }}
 				onclick={(e) => {
 					if (typeof e.features === 'undefined') return;
 					popup = createPopup(
@@ -400,6 +425,7 @@
 			/>
 			<SymbolLayer
 				paint={{
+					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
 						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
@@ -409,25 +435,21 @@
 				}}
 				layout={{
 					'icon-image': 'icon-convenience',
-					'icon-size': 0.6,
-					'icon-allow-overlap': true
+					...iconLayerCommonProperty.layout,
 				}}
 			/>
 			<SymbolLayer
 				layout={{
-					'text-font': ['Noto Sans Bold'],
-					'text-field': '{brand}',
-					'text-offset': [0, 1]
+					...labelLayerCommonProperty.layout,
 				}}
 				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
+					...labelLayerCommonProperty.paint,
 				}}
 			/>
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
-				paint={{ 'circle-color': 'white', 'circle-radius': 15 }}
+				paint={{ ...circleLayerCommonProperty.paint }}
 				onclick={(e) => {
 					if (typeof e.features === 'undefined') return;
 					popup = createPopup(
@@ -442,6 +464,7 @@
 			/>
 			<SymbolLayer
 				paint={{
+					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
 						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
@@ -451,19 +474,15 @@
 				}}
 				layout={{
 					'icon-image': 'icon-atm',
-					'icon-size': 0.6,
-					'icon-allow-overlap': true
+					...iconLayerCommonProperty.layout,
 				}}
 			/>
 			<SymbolLayer
 				layout={{
-					'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
-					'text-font': ['Noto Sans Bold'],
-					'text-offset': [0, 1]
+					...labelLayerCommonProperty.layout,
 				}}
 				paint={{
-					'text-halo-width': 2,
-					'text-halo-color': 'white'
+					...labelLayerCommonProperty.paint,
 				}}
 			/>
 		</GeoJSONSource>
