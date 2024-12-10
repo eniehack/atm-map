@@ -362,7 +362,18 @@
 			'circle-color': 'white',
 			'circle-radius': 15
 		}
-	}
+	};
+	const circleLayerOnClick = (e) => {
+		if (typeof e.features === 'undefined') return;
+		popup = createPopup(
+			{ lng: e.lngLat.lng, lat: e.lngLat.lat },
+			{
+				opening_hours: e.features[0].properties['opening_hours'],
+				name: e.features[0].properties['name']
+			}
+		);
+		map?.flyTo({ center: e.lngLat });
+	};
 </script>
 
 <svelte:head>
@@ -410,17 +421,7 @@
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
 			<CircleLayer
 				paint={{ ...circleLayerCommonProperty.paint }}
-				onclick={(e) => {
-					if (typeof e.features === 'undefined') return;
-					popup = createPopup(
-						{ lng: e.lngLat.lng, lat: e.lngLat.lat },
-						{
-							opening_hours: e.features[0].properties['opening_hours'],
-							name: e.features[0].properties['name']
-						}
-					);
-					map?.flyTo({ center: e.lngLat });
-				}}
+				onclick={circleLayerOnClick}
 			/>
 			<SymbolLayer
 				paint={{
@@ -449,17 +450,7 @@
 		<GeoJSONSource data={filteredAtmData as any}>
 			<CircleLayer
 				paint={{ ...circleLayerCommonProperty.paint }}
-				onclick={(e) => {
-					if (typeof e.features === 'undefined') return;
-					popup = createPopup(
-						{ lng: e.lngLat.lng, lat: e.lngLat.lat },
-						{
-							opening_hours: e.features[0].properties['opening_hours'],
-							name: e.features[0].properties['name']
-						}
-					);
-					map?.flyTo({ center: e.lngLat });
-				}}
+				onclick={circleLayerOnClick}
 			/>
 			<SymbolLayer
 				paint={{
