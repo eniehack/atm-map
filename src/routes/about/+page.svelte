@@ -9,9 +9,12 @@
 	<section class="p-4">
 		<h1 class="text-xl font-semibold">地図、ATMデータの出典</h1>
 		<p>
-			地図データ、ATM地点データ共に<a class="text-sky-500 hover:underline" href="https://openstreetmap.org">OpenStreetMap</a
+			地図データ、ATM地点データ共に<a
+				class="text-sky-500 hover:underline"
+				href="https://openstreetmap.org">OpenStreetMap</a
 			>を利用しています。 OSMの提供するデータはODbLの下にライセンスされます。 詳細は<a
-				class="text-sky-500 hover:underline" href="https://www.openstreetmap.org/copyright">こちら</a
+				class="text-sky-500 hover:underline"
+				href="https://www.openstreetmap.org/copyright">こちら</a
 			>をご覧ください。
 		</p>
 	</section>
