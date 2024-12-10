@@ -8,9 +8,9 @@
 	<section class="p-4">
 		<h2 class="text-xl font-semibold">登録されていないATMの報告</h2>
 		<p class="p-3">
-			このサイトでは、自動販売機のデータ、地図データを<a href="https://openstreetmap.org/"
-				class="text-sky-500 hover:underline"
-				>OpenStreetMap</a
+			このサイトでは、自動販売機のデータ、地図データを<a
+				href="https://openstreetmap.org/"
+				class="text-sky-500 hover:underline">OpenStreetMap</a
 			>から取得しています。 OpenStreetMapにユーザ登録をして、ATMのデータを追加することもできます。
 		</p>
 		<!--<p>
@@ -20,14 +20,16 @@
 	<section class="p-4">
 		<h2 class="text-xl font-semibold">開発に参加する</h2>
 		<p class="p-3">
-			このサイトは<a class="text-sky-500 hover:underline" href="https://github.com/eniehack/atm-map">GitHub</a
+			このサイトは<a class="text-sky-500 hover:underline" href="https://github.com/eniehack/atm-map"
+				>GitHub</a
 			>にて、オープンソースソフトウェアとして公開されています。 Pull Request歓迎です。
 		</p>
 	</section>
 	<section class="p-4">
 		<h2 class="text-xl font-semibold">バグ等の報告、機能の提案</h2>
 		<p class="p-3">
-			<a class="text-sky-500 hover:underline" href="https://github.com/eniehack/atm-map/issues">GitHubのissue</a
+			<a class="text-sky-500 hover:underline" href="https://github.com/eniehack/atm-map/issues"
+				>GitHubのissue</a
 			>に投稿してください。
 		</p>
 	</section>

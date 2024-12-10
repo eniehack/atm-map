@@ -247,9 +247,9 @@
 				map?.addImage('icon-convenience', img.data, { sdf: true });
 			});
 		});
-		const darkmodeConfig = localStorage.getItem("atm-map.darkmode")
+		const darkmodeConfig = localStorage.getItem('atm-map.darkmode');
 		if (darkmodeConfig !== null) {
-			isDarkMode.set(JSON.parse(darkmodeConfig))
+			isDarkMode.set(JSON.parse(darkmodeConfig));
 		}
 	});
 
@@ -340,24 +340,23 @@
 		};
 	};
 	const iconLayerCommonProperty = {
-		paint: {
-		} as maplibregl.SymbolLayerSpecification["paint"],
+		paint: {} as maplibregl.SymbolLayerSpecification['paint'],
 		layout: {
 			'icon-size': 0.6,
 			'icon-allow-overlap': true
-		} as maplibregl.SymbolLayerSpecification["layout"],
-	}
+		} as maplibregl.SymbolLayerSpecification['layout']
+	};
 	const labelLayerCommonProperty = {
 		layout: {
 			'text-font': ['Noto Sans Bold'],
 			'text-field': ['format', ['coalesce', ['get', 'brand'], ['get', 'name']]],
 			'text-offset': [0, 1]
-		} as maplibregl.SymbolLayerSpecification["layout"],
+		} as maplibregl.SymbolLayerSpecification['layout'],
 		paint: {
 			'text-halo-width': 2,
 			'text-halo-color': 'white'
-		} as maplibregl.SymbolLayerSpecification["paint"],
-	}
+		} as maplibregl.SymbolLayerSpecification['paint']
+	};
 	const circleLayerCommonProperty = {
 		paint: {
 			'circle-color': 'white',
@@ -435,15 +434,15 @@
 				}}
 				layout={{
 					'icon-image': 'icon-convenience',
-					...iconLayerCommonProperty.layout,
+					...iconLayerCommonProperty.layout
 				}}
 			/>
 			<SymbolLayer
 				layout={{
-					...labelLayerCommonProperty.layout,
+					...labelLayerCommonProperty.layout
 				}}
 				paint={{
-					...labelLayerCommonProperty.paint,
+					...labelLayerCommonProperty.paint
 				}}
 			/>
 		</GeoJSONSource>
@@ -474,15 +473,15 @@
 				}}
 				layout={{
 					'icon-image': 'icon-atm',
-					...iconLayerCommonProperty.layout,
+					...iconLayerCommonProperty.layout
 				}}
 			/>
 			<SymbolLayer
 				layout={{
-					...labelLayerCommonProperty.layout,
+					...labelLayerCommonProperty.layout
 				}}
 				paint={{
-					...labelLayerCommonProperty.paint,
+					...labelLayerCommonProperty.paint
 				}}
 			/>
 		</GeoJSONSource>
