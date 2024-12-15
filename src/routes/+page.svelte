@@ -314,7 +314,8 @@
 		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
-			const oh = new openingHours(feature.opening_hours);
+			// @ts-ignore
+			const oh = new openingHours(feature.opening_hours, {lon: userLocation[0], lat: userLocation[1], address: {country_code: "jp", country: "日本"}});
 			if (oh.getState()) {
 				content = `<p class="text-green-500">営業中</p>`;
 			} else {
