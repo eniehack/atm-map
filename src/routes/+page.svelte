@@ -152,13 +152,14 @@
 		if (typeof userLocation === 'undefined') return null;
 		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
 		const filteredPoints = [] as NearPoint[];
-		target.forEach((point) => {
-			const d = distance(userLocation, point.geometry.coordinates);
+		target.forEach((p) => {
+			if (typeof userLocation === 'undefined') return;
+			const d = distance(userLocation, p.geometry.coordinates);
 			if (d < thresholdDistance) {
 				filteredPoints.push({
 					distance: d,
-					feature: point.properties,
-					coordinate: point.geometry.coordinates
+					feature: p.properties,
+					coordinate: p.geometry.coordinates
 				});
 			}
 		});
