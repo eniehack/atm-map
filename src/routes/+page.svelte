@@ -79,12 +79,12 @@
 	type MyGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point, MyGeoJSONFeature> & {
 		name?: string;
 		crs?: {
-			"type": string;
+			type: string;
 			properties: {
 				name: string;
-			}
-		}
-	}
+			};
+		};
+	};
 	type Position = [number, number];
 	let atmIndex = $state<Fuse<Index>>();
 	let atm = $state<MyGeoJSON>();
@@ -134,7 +134,7 @@
 			name: 'searchResults',
 			crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
 			features: []
-		} as MyGeoJSON
+		} as MyGeoJSON;
 		result.forEach((elem) => {
 			root.features.push({
 				type: 'Feature',
@@ -188,7 +188,7 @@
 				filteredPoints.push({
 					distance: d,
 					feature: point.properties,
-					coordinate: point.geometry.coordinates as [number, number],
+					coordinate: point.geometry.coordinates as [number, number]
 				});
 			}
 		});
@@ -325,7 +325,14 @@
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
 			// @ts-ignore
-			const oh = new openingHours(feature.opening_hours, {lon: userLocation[0], lat: userLocation[1], address: {country_code: "jp", country: "日本"}});
+			const oh = new openingHours(feature.opening_hours, {
+				// @ts-ignore
+				lon: userLocation[0],
+				// @ts-ignore
+				lat: userLocation[1],
+				// @ts-ignore
+				address: { country_code: 'jp', country: '日本' }
+			});
 			if (oh.getState()) {
 				content = `<p class="text-green-500">営業中</p>`;
 			} else {
@@ -418,10 +425,7 @@
 			/>
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
-			<CircleLayer
-				paint={{ ...circleLayerCommonProperty.paint }}
-				onclick={circleLayerOnClick}
-			/>
+			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
 					...iconLayerCommonProperty.paint,
@@ -447,10 +451,7 @@
 			/>
 		</GeoJSONSource>
 		<GeoJSONSource data={filteredAtmData as any}>
-			<CircleLayer
-				paint={{ ...circleLayerCommonProperty.paint }}
-				onclick={circleLayerOnClick}
-			/>
+			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
 					...iconLayerCommonProperty.paint,
