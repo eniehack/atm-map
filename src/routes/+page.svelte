@@ -62,44 +62,31 @@
 		['ゆうちょ銀行', { $or: [{ name: '郵便局' }, { brand: 'ゆうちょ銀行' }] }]
 	]);
 
-	type LatLng = [number, number];
 	type Index = {
 		brand: string | null;
 		opening_hours: string | null;
 		name: string | null;
-		geom: LatLng;
+		geom: GeoJSON.Position;
 	};
 
-	type GeoJSONFeature = {
+	type MyGeoJSONFeature = {
 		fid: number;
 		brand: string | null;
 		opening_hours: string | null;
 		name: string | null;
 	};
-	type GeoJSON = {
-		type: string;
-		name?: string;
-		crs?: object;
-		features: {
-			type: string;
-			properties: GeoJSONFeature;
-			geometry: {
-				type: string;
-				coordinates: [number, number];
-			};
-		}[];
-	};
+	type MyGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point, MyGeoJSONFeature>
 	let atmIndex = $state<Fuse<Index>>();
-	let atm = $state<GeoJSON>();
+	let atm = $state<MyGeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
-	let convenience = $state<GeoJSON>();
+	let convenience = $state<MyGeoJSON>();
 	let query = $state<string>();
 	let userLocation = $state<[number, number]>();
 	let isTextFieldFocused = $state(false);
 
 	const fetchAtmData = async () => {
 		const resp = await fetch(`${base}/atm.json`);
-		const json = (await resp.json()) as GeoJSON;
+		const json = (await resp.json()) as MyGeoJSON;
 		atm = json;
 		const index = [] as Index[];
 		json.features.forEach((feature) => {
@@ -116,7 +103,7 @@
 
 	const fetchConvenienceData = async () => {
 		const resp = await fetch(`${base}/convenience.json`);
-		const json = (await resp.json()) as GeoJSON;
+		const json = (await resp.json()) as MyGeoJSON;
 		convenience = json;
 		const index = [] as Index[];
 		json.features.forEach((feature) => {
@@ -131,13 +118,13 @@
 		convenienceIndex = new Fuse(index, { keys: ['brand', 'name'] });
 	};
 
-	const createGeoJsonFromIndex = (result: FuseResult<Index>[]): GeoJSON => {
+	const createGeoJsonFromIndex = (result: FuseResult<Index>[]): MyGeoJSON => {
 		let root = {
 			type: 'FeatureCollection',
 			name: 'searchResults',
 			crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
 			features: []
-		} as GeoJSON;
+		} as MyGeoJSON
 		result.forEach((elem) => {
 			root.features.push({
 				type: 'Feature',
@@ -157,8 +144,8 @@
 	};
 	type NearPoint = {
 		distance: number;
-		feature: GeoJSONFeature;
-		coordinate: [number, number];
+		feature: GeoJSON.Feature<GeoJSON.Point, MyGeoJSONFeature>;
+		coordinate: GeoJSON.Position;
 	};
 	const findNearestPoint = () => {
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
@@ -291,7 +278,7 @@
 	});
 
 	let nowAvailableFilterFlag = $state(false);
-	const filterByOpeningHour = (targetPoints: GeoJSON, targetDate: Date): GeoJSON => {
+	const filterByOpeningHour = (targetPoints: MyGeoJSON, targetDate: Date): MyGeoJSON => {
 		const feat = targetPoints.features.filter((val) => {
 			if (val.properties.opening_hours === null) return false;
 			try {
