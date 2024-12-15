@@ -63,10 +63,11 @@
 	]);
 
 	type Index = {
+		fid: number;
 		brand: string | null;
 		opening_hours: string | null;
 		name: string | null;
-		geom: GeoJSON.Position;
+		geom: Position;
 	};
 
 	type MyGeoJSONFeature = {
@@ -75,7 +76,16 @@
 		opening_hours: string | null;
 		name: string | null;
 	};
-	type MyGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point, MyGeoJSONFeature>
+	type MyGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point, MyGeoJSONFeature> & {
+		name?: string;
+		crs?: {
+			"type": string;
+			properties: {
+				name: string;
+			}
+		}
+	}
+	type Position = [number, number];
 	let atmIndex = $state<Fuse<Index>>();
 	let atm = $state<MyGeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
@@ -144,8 +154,8 @@
 	};
 	type NearPoint = {
 		distance: number;
-		feature: GeoJSON.Feature<GeoJSON.Point, MyGeoJSONFeature>;
-		coordinate: GeoJSON.Position;
+		feature: MyGeoJSONFeature;
+		coordinate: Position;
 	};
 	const findNearestPoint = () => {
 		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
@@ -159,7 +169,7 @@
 				filteredPoints.push({
 					distance: d,
 					feature: p.properties,
-					coordinate: p.geometry.coordinates
+					coordinate: p.geometry.coordinates as [number, number]
 				});
 			}
 		});
@@ -178,7 +188,7 @@
 				filteredPoints.push({
 					distance: d,
 					feature: point.properties,
-					coordinate: point.geometry.coordinates
+					coordinate: point.geometry.coordinates as [number, number],
 				});
 			}
 		});
@@ -308,7 +318,7 @@
 
 	const createPopup = (
 		coord: { lng: number; lat: number },
-		feature: { opening_hours: string | undefined | null; name: string }
+		feature: { opening_hours: string | undefined | null; name: string | null }
 	): { lng: number; lat: number; content: string } => {
 		let content = '';
 		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
@@ -352,7 +362,7 @@
 			'circle-radius': 15
 		}
 	};
-	const circleLayerOnClick = (e) => {
+	const circleLayerOnClick = (e: maplibregl.MapLayerMouseEvent) => {
 		if (typeof e.features === 'undefined') return;
 		popup = createPopup(
 			{ lng: e.lngLat.lng, lat: e.lngLat.lat },
