@@ -44,7 +44,6 @@ if __name__ == "__main__":
     gdf = geopandas.read_parquet(opt.parquet)
     gdf["tags"] = gdf["tags"].apply(lambda l: {i[0]: i[1] for i in l})
     gdf["brand"] = gdf["tags"].apply(get_sometag("brand"))
-    gdf["branch"] = gdf["tags"].apply(get_sometag("branch"))
     gdf["name"] = gdf["tags"].apply(get_sometag("name"))
     gdf["atm"] = gdf["tags"].apply(is_atm)
     gdf["convenience"] = gdf["tags"].apply(is_convenience)
