@@ -50,9 +50,9 @@ if __name__ == "__main__":
     gdf["opening_hours"] = gdf["tags"].apply(get_sometag("opening_hours"))
     gdf.geometry = gdf.representative_point()
     gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
-    atm_gdf = gdf[gdf["atm"] == True]
-    atm_gdf = atm_gdf[["feature_id", "brand", "branch", "name", "opening_hours", "geometry"]]
+    atm_gdf = gdf[gdf["atm"]]
+    atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
     atm_gdf.to_file(opt.geojson_dir / f"atm-{strftime("%Y%m%d")}.json", driver="GeoJSON")
-    convenience_gdf = gdf[(gdf["convenience"] == True) & gdf["atm"] == False]
-    convenience_gdf = convenience_gdf[["feature_id", "brand", "branch", "name", "opening_hours", "geometry"]]
+    convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
+    convenience_gdf = convenience_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
     convenience_gdf.to_file(opt.geojson_dir / f"convenience-{strftime("%Y%m%d")}.json", driver="GeoJSON")
