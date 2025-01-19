@@ -431,7 +431,11 @@
 					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
-						['in', ['get', 'feature_id'], ['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]],
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
 						'red',
 						'blue'
 					]
@@ -457,7 +461,11 @@
 					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
-						['in', ['get', 'feature_id'], ['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]],
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
 						'red',
 						'#FFC300'
 					]

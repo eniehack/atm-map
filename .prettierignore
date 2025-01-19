@@ -3,5 +3,6 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
-static/atm.json
-static/convenience.json
+static/*.json
+
+script/
