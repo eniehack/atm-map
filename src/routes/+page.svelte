@@ -63,7 +63,7 @@
 	]);
 
 	type Index = {
-		fid: number;
+		feature_id: number;
 		brand: string | null;
 		opening_hours: string | null;
 		name: string | null;
@@ -71,7 +71,7 @@
 	};
 
 	type MyGeoJSONFeature = {
-		fid: number;
+		feature_id: number;
 		brand: string | null;
 		opening_hours: string | null;
 		name: string | null;
@@ -104,7 +104,7 @@
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
-				fid: feature.properties.fid,
+				feature_id: feature.properties.feature_id,
 				geom: feature.geometry.coordinates
 			} as Index);
 		});
@@ -121,7 +121,7 @@
 				brand: feature.properties.brand,
 				opening_hours: feature.properties.opening_hours,
 				name: feature.properties.name,
-				fid: feature.properties.fid,
+				feature_id: feature.properties.feature_id,
 				geom: feature.geometry.coordinates
 			} as Index);
 		});
@@ -139,7 +139,7 @@
 			root.features.push({
 				type: 'Feature',
 				properties: {
-					fid: elem.item.fid,
+					feature_id: elem.item.feature_id,
 					brand: elem.item.brand,
 					opening_hours: elem.item.opening_hours,
 					name: elem.item.name
@@ -431,7 +431,11 @@
 					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
-						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
 						'red',
 						'blue'
 					]
@@ -457,7 +461,11 @@
 					...iconLayerCommonProperty.paint,
 					'icon-color': [
 						'case',
-						['in', ['get', 'fid'], ['literal', (nearPoint ?? []).map((val) => val.feature.fid)]],
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
 						'red',
 						'#FFC300'
 					]
