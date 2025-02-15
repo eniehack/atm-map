@@ -176,9 +176,18 @@
 		coordinate: Position;
 	};
 	const findNearestPoint = () => {
-		if (typeof atm === 'undefined' || typeof convenience === 'undefined' || typeof bank === 'undefined') return null;
+		if (
+			typeof atm === 'undefined' ||
+			typeof convenience === 'undefined' ||
+			typeof bank === 'undefined'
+		)
+			return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features, ...filteredBankData.features];
+		const target = [
+			...filteredAtmData.features,
+			...filteredConvenienceData.features,
+			...filteredBankData.features
+		];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((p) => {
 			if (typeof userLocation === 'undefined') return;
@@ -195,10 +204,18 @@
 		return filteredPoints.slice(0, 9);
 	};
 	const findNearestPointWithQuery = () => {
-		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined' || typeof filteredBankData === 'undefined')
+		if (
+			typeof filteredAtmData === 'undefined' ||
+			typeof filteredConvenienceData === 'undefined' ||
+			typeof filteredBankData === 'undefined'
+		)
 			return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features, ...filteredBankData.features];
+		const target = [
+			...filteredAtmData.features,
+			...filteredConvenienceData.features,
+			...filteredBankData.features
+		];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation!, point.geometry.coordinates);
@@ -253,10 +270,19 @@
 
 	let nearPoint = $derived.by(() => {
 		if (typeof query === 'undefined' || query.length === 0) {
-			if (typeof convenience === 'undefined' && typeof atm === 'undefined' && typeof bank === 'undefined') return;
+			if (
+				typeof convenience === 'undefined' &&
+				typeof atm === 'undefined' &&
+				typeof bank === 'undefined'
+			)
+				return;
 			return findNearestPoint();
 		}
-		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined' && typeof filteredBankData === 'undefined')
+		if (
+			typeof filteredAtmData === 'undefined' &&
+			typeof filteredConvenienceData === 'undefined' &&
+			typeof filteredBankData === 'undefined'
+		)
 			return;
 		return findNearestPointWithQuery();
 	});
@@ -350,7 +376,7 @@
 		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
-			const location = userLocation ?? [coord.lng, coord.lat]
+			const location = userLocation ?? [coord.lng, coord.lat];
 			// @ts-ignore
 			const oh = new openingHours(feature.opening_hours, {
 				// @ts-ignore
