@@ -11,8 +11,8 @@
 		FillLayer,
 		LineLayer
 	} from 'svelte-maplibre-gl';
+	import type GeoJSON from '@types/geojson';
 	import maplibregl from 'maplibre-gl';
-	import { osm, dark } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
@@ -329,12 +329,8 @@
 
 	let map = $state<maplibregl.Map | undefined>(undefined);
 
-	let circleFromUserPosition: any = $derived.by(() => {
-		if (typeof userLocation === 'undefined')
-			return {
-				type: 'FeatureCollection',
-				features: []
-			};
+	let circleFromUserPosition = $derived.by(() => {
+		if (typeof userLocation === 'undefined') return undefined;
 		const p = point(userLocation);
 		const buffered = buffer(p, thresholdDistance);
 		return buffered;
@@ -353,7 +349,7 @@
 					locale: 'JP'
 				});
 				return oh.getState(targetDate);
-			} catch (error) {
+			} catch {
 				return false;
 			}
 		});
@@ -377,11 +373,8 @@
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
 			const location = userLocation ?? [coord.lng, coord.lat];
-			// @ts-ignore
 			const oh = new openingHours(feature.opening_hours, {
-				// @ts-ignore
 				lon: location[0],
-				// @ts-ignore
 				lat: location[1],
 				// @ts-ignore
 				address: { country_code: 'jp', country: '日本' }
@@ -463,21 +456,23 @@
 			ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
 		/>
 		<DarkmodeControl />
-		<GeoJSONSource data={circleFromUserPosition}>
-			<FillLayer
-				paint={{
-					'fill-color': '#00bfff',
-					'fill-opacity': 0.5
-				}}
-			/>
-			<LineLayer
-				paint={{
-					'line-color': 'white',
-					'line-width': 2
-				}}
-			/>
-		</GeoJSONSource>
-		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
+		{#if typeof circleFromUserPosition !== 'undefined'}
+			<GeoJSONSource data={circleFromUserPosition}>
+				<FillLayer
+					paint={{
+						'fill-color': '#00bfff',
+						'fill-opacity': 0.5
+					}}
+				/>
+				<LineLayer
+					paint={{
+						'line-color': 'white',
+						'line-width': 2
+					}}
+				/>
+			</GeoJSONSource>
+		{/if}
+		<GeoJSONSource data={filteredConvenienceData} cluster={true}>
 			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
@@ -507,7 +502,7 @@
 				}}
 			/>
 		</GeoJSONSource>
-		<GeoJSONSource data={filteredBankData as any}>
+		<GeoJSONSource data={filteredBankData}>
 			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
@@ -537,7 +532,7 @@
 				}}
 			/>
 		</GeoJSONSource>
-		<GeoJSONSource data={filteredAtmData as any}>
+		<GeoJSONSource data={filteredAtmData}>
 			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
@@ -569,9 +564,10 @@
 		</GeoJSONSource>
 
 		{#if popup !== null}
-			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
-				>{@html popup.content}</Popup
-			>
+			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html popup.content}
+			</Popup>
 		{/if}
 	</MapLibre>
 </div>
@@ -581,8 +577,7 @@
 		id="q"
 		bind:value={query}
 		oninput={(e) => {
-			// @ts-ignore
-			handleQuery(e.target.value);
+			handleQuery(e.target?.value);
 		}}
 		placeholder="ここから絞り込み検索"
 		class="bg-neutral-500 p-2 rounded-full w-[17rem]"
@@ -635,7 +630,7 @@
 			id="near-threshold"
 			onchange={(e) => {
 				if (e.target !== null) {
-					// @ts-ignore
+					// @ts-expect-error
 					thresholdDistance = Number(e.target.value);
 				}
 			}}
