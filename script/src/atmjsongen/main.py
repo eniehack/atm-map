@@ -28,6 +28,12 @@ def is_atm(tags):
     else:
         return False
 
+def is_bank(tags):
+    if "amenity" in tags and tags["amenity"] == "bank":
+        return True
+    else:
+        return False
+
 def is_convenience(tags):
     if "shop" in tags and tags["shop"] == "convenience":
         return True
@@ -46,6 +52,7 @@ if __name__ == "__main__":
     gdf["brand"] = gdf["tags"].apply(get_sometag("brand"))
     gdf["name"] = gdf["tags"].apply(get_sometag("name"))
     gdf["atm"] = gdf["tags"].apply(is_atm)
+    gdf["bank"] = gdf["tags"].apply(is_bank)
     gdf["convenience"] = gdf["tags"].apply(is_convenience)
     gdf["opening_hours"] = gdf["tags"].apply(get_sometag("opening_hours"))
     gdf.geometry = gdf.representative_point()
@@ -53,6 +60,9 @@ if __name__ == "__main__":
     atm_gdf = gdf[gdf["atm"]]
     atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
     atm_gdf.to_file(opt.geojson_dir / f"atm-{strftime("%Y%m%d")}.json", driver="GeoJSON")
+    bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
+    bank_gdf = bank_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
+    bank_gdf.to_file(opt.geojson_dir / f"bank-{strftime("%Y%m%d")}.json", driver="GeoJSON")
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
     convenience_gdf = convenience_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
     convenience_gdf.to_file(opt.geojson_dir / f"convenience-{strftime("%Y%m%d")}.json", driver="GeoJSON")
