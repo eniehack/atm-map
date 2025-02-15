@@ -324,12 +324,13 @@
 		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
+			const location = userLocation ?? [coord.lng, coord.lat]
 			// @ts-ignore
 			const oh = new openingHours(feature.opening_hours, {
 				// @ts-ignore
-				lon: userLocation[0],
+				lon: location[0],
 				// @ts-ignore
-				lat: userLocation[1],
+				lat: location[1],
 				// @ts-ignore
 				address: { country_code: 'jp', country: '日本' }
 			});
@@ -400,7 +401,7 @@
 		bind:map
 		class="h-full w-screen"
 		style={$mapStyle}
-		zoom={4}
+		zoom={15}
 		center={{ lng: 141.350331, lat: 43.068643 }}
 	>
 		<NavigationControl />
