@@ -39,6 +39,12 @@ def is_convenience(tags):
         return True
     return False
 
+def get_openinghours(tags):
+    atm_opening = get_sometag("opening_hours:atm")(tags)
+    if atm_opening is None:
+        return get_sometag("opening_hours")(tags)
+    return atm_opening
+
 
 if __name__ == "__main__":
     # argparser = ArgumentParser()
@@ -54,7 +60,7 @@ if __name__ == "__main__":
     gdf["atm"] = gdf["tags"].apply(is_atm)
     gdf["bank"] = gdf["tags"].apply(is_bank)
     gdf["convenience"] = gdf["tags"].apply(is_convenience)
-    gdf["opening_hours"] = gdf["tags"].apply(get_sometag("opening_hours"))
+    gdf["opening_hours"] = gdf["tags"].apply(get_openinghours)
     gdf.geometry = gdf.representative_point()
     gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
     atm_gdf = gdf[gdf["atm"]]
