@@ -90,6 +90,8 @@
 	let atm = $state<MyGeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
 	let convenience = $state<MyGeoJSON>();
+	let bankIndex = $state<Fuse<Index>>();
+	let bank = $state<MyGeoJSON>();
 	let query = $state<string>();
 	let userLocation = $state<[number, number]>();
 	let isTextFieldFocused = $state(false);
@@ -109,6 +111,22 @@
 			} as Index);
 		});
 		atmIndex = new Fuse(index, { keys: ['brand', 'name'] });
+	};
+	const fetchBankData = async () => {
+		const resp = await fetch(`${base}/bank.json`);
+		const json = (await resp.json()) as MyGeoJSON;
+		bank = json;
+		const index = [] as Index[];
+		json.features.forEach((feature) => {
+			index.push({
+				brand: feature.properties.brand,
+				opening_hours: feature.properties.opening_hours,
+				name: feature.properties.name,
+				feature_id: feature.properties.feature_id,
+				geom: feature.geometry.coordinates
+			} as Index);
+		});
+		bankIndex = new Fuse(index, { keys: ['brand', 'name'] });
 	};
 
 	const fetchConvenienceData = async () => {
@@ -158,9 +176,9 @@
 		coordinate: Position;
 	};
 	const findNearestPoint = () => {
-		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
+		if (typeof atm === 'undefined' || typeof convenience === 'undefined' || typeof bank === 'undefined') return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const target = [...filteredAtmData.features, ...filteredConvenienceData.features, ...filteredBankData.features];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((p) => {
 			if (typeof userLocation === 'undefined') return;
@@ -177,10 +195,10 @@
 		return filteredPoints.slice(0, 9);
 	};
 	const findNearestPointWithQuery = () => {
-		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined')
+		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined' || typeof filteredBankData === 'undefined')
 			return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const target = [...filteredAtmData.features, ...filteredConvenienceData.features, ...filteredBankData.features];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation!, point.geometry.coordinates);
@@ -197,6 +215,7 @@
 	};
 
 	let filteredAtmData = $state(createGeoJsonFromIndex([]));
+	let filteredBankData = $state(createGeoJsonFromIndex([]));
 	let filteredConvenienceData = $state(createGeoJsonFromIndex([]));
 
 	/**
@@ -211,32 +230,39 @@
 			filteredConvenienceData = createGeoJsonFromIndex([]);
 			return;
 		}
+		if (typeof bankIndex === 'undefined') {
+			filteredBankData = createGeoJsonFromIndex([]);
+			return;
+		}
 
 		if (typeof query === 'undefined' || query === '') {
 			filteredAtmData = atm ?? createGeoJsonFromIndex([]);
 			filteredConvenienceData = convenience ?? createGeoJsonFromIndex([]);
+			filteredBankData = bank ?? createGeoJsonFromIndex([]);
 			return;
 		}
 
 		const q = queryMacroMap.has(query) ? queryMacroMap.get(query) : query;
 		const resultAtm = atmIndex.search(q!);
 		const resultConvenience = convenienceIndex.search(q!);
+		const resultBank = bankIndex.search(q!);
 		filteredAtmData = createGeoJsonFromIndex(resultAtm);
+		filteredBankData = createGeoJsonFromIndex(resultBank);
 		filteredConvenienceData = createGeoJsonFromIndex(resultConvenience);
 	}, 500); // 500ms
 
 	let nearPoint = $derived.by(() => {
 		if (typeof query === 'undefined' || query.length === 0) {
-			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
+			if (typeof convenience === 'undefined' && typeof atm === 'undefined' && typeof bank === 'undefined') return;
 			return findNearestPoint();
 		}
-		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined')
+		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined' && typeof filteredBankData === 'undefined')
 			return;
 		return findNearestPointWithQuery();
 	});
 
 	$effect(() => {
-		Promise.all([fetchAtmData(), fetchConvenienceData()]).then(() => {
+		Promise.all([fetchAtmData(), fetchConvenienceData(), fetchBankData()]).then(() => {
 			handleQuery('');
 			map?.loadImage(`${base}/icon-atm.png`).then((img) => {
 				map?.addImage('icon-atm', img.data, { sdf: true });
@@ -443,6 +469,36 @@
 				}}
 				layout={{
 					'icon-image': 'icon-convenience',
+					...iconLayerCommonProperty.layout
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					...labelLayerCommonProperty.layout
+				}}
+				paint={{
+					...labelLayerCommonProperty.paint
+				}}
+			/>
+		</GeoJSONSource>
+		<GeoJSONSource data={filteredBankData as any}>
+			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
+			<SymbolLayer
+				paint={{
+					...iconLayerCommonProperty.paint,
+					'icon-color': [
+						'case',
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
+						'red',
+						'#FFC300'
+					]
+				}}
+				layout={{
+					'icon-image': 'icon-atm',
 					...iconLayerCommonProperty.layout
 				}}
 			/>
