@@ -11,8 +11,8 @@
 		FillLayer,
 		LineLayer
 	} from 'svelte-maplibre-gl';
+	import type GeoJSON from '@types/geojson';
 	import maplibregl from 'maplibre-gl';
-	import { osm, dark } from './style';
 	import { base } from '$app/paths';
 	import Fuse from 'fuse.js';
 	import type { FuseResult } from 'fuse.js';
@@ -90,6 +90,8 @@
 	let atm = $state<MyGeoJSON>();
 	let convenienceIndex = $state<Fuse<Index>>();
 	let convenience = $state<MyGeoJSON>();
+	let bankIndex = $state<Fuse<Index>>();
+	let bank = $state<MyGeoJSON>();
 	let query = $state<string>();
 	let userLocation = $state<[number, number]>();
 	let isTextFieldFocused = $state(false);
@@ -109,6 +111,22 @@
 			} as Index);
 		});
 		atmIndex = new Fuse(index, { keys: ['brand', 'name'] });
+	};
+	const fetchBankData = async () => {
+		const resp = await fetch(`${base}/bank.json`);
+		const json = (await resp.json()) as MyGeoJSON;
+		bank = json;
+		const index = [] as Index[];
+		json.features.forEach((feature) => {
+			index.push({
+				brand: feature.properties.brand,
+				opening_hours: feature.properties.opening_hours,
+				name: feature.properties.name,
+				feature_id: feature.properties.feature_id,
+				geom: feature.geometry.coordinates
+			} as Index);
+		});
+		bankIndex = new Fuse(index, { keys: ['brand', 'name'] });
 	};
 
 	const fetchConvenienceData = async () => {
@@ -158,9 +176,18 @@
 		coordinate: Position;
 	};
 	const findNearestPoint = () => {
-		if (typeof atm === 'undefined' || typeof convenience === 'undefined') return null;
+		if (
+			typeof atm === 'undefined' ||
+			typeof convenience === 'undefined' ||
+			typeof bank === 'undefined'
+		)
+			return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const target = [
+			...filteredAtmData.features,
+			...filteredConvenienceData.features,
+			...filteredBankData.features
+		];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((p) => {
 			if (typeof userLocation === 'undefined') return;
@@ -177,10 +204,18 @@
 		return filteredPoints.slice(0, 9);
 	};
 	const findNearestPointWithQuery = () => {
-		if (typeof filteredAtmData === 'undefined' || typeof filteredConvenienceData === 'undefined')
+		if (
+			typeof filteredAtmData === 'undefined' ||
+			typeof filteredConvenienceData === 'undefined' ||
+			typeof filteredBankData === 'undefined'
+		)
 			return null;
 		if (typeof userLocation === 'undefined') return null;
-		const target = [...filteredAtmData.features, ...filteredConvenienceData.features];
+		const target = [
+			...filteredAtmData.features,
+			...filteredConvenienceData.features,
+			...filteredBankData.features
+		];
 		const filteredPoints = [] as NearPoint[];
 		target.forEach((point) => {
 			const d = distance(userLocation!, point.geometry.coordinates);
@@ -197,6 +232,7 @@
 	};
 
 	let filteredAtmData = $state(createGeoJsonFromIndex([]));
+	let filteredBankData = $state(createGeoJsonFromIndex([]));
 	let filteredConvenienceData = $state(createGeoJsonFromIndex([]));
 
 	/**
@@ -211,32 +247,48 @@
 			filteredConvenienceData = createGeoJsonFromIndex([]);
 			return;
 		}
+		if (typeof bankIndex === 'undefined') {
+			filteredBankData = createGeoJsonFromIndex([]);
+			return;
+		}
 
 		if (typeof query === 'undefined' || query === '') {
 			filteredAtmData = atm ?? createGeoJsonFromIndex([]);
 			filteredConvenienceData = convenience ?? createGeoJsonFromIndex([]);
+			filteredBankData = bank ?? createGeoJsonFromIndex([]);
 			return;
 		}
 
 		const q = queryMacroMap.has(query) ? queryMacroMap.get(query) : query;
 		const resultAtm = atmIndex.search(q!);
 		const resultConvenience = convenienceIndex.search(q!);
+		const resultBank = bankIndex.search(q!);
 		filteredAtmData = createGeoJsonFromIndex(resultAtm);
+		filteredBankData = createGeoJsonFromIndex(resultBank);
 		filteredConvenienceData = createGeoJsonFromIndex(resultConvenience);
 	}, 500); // 500ms
 
 	let nearPoint = $derived.by(() => {
 		if (typeof query === 'undefined' || query.length === 0) {
-			if (typeof convenience === 'undefined' && typeof atm === 'undefined') return;
+			if (
+				typeof convenience === 'undefined' &&
+				typeof atm === 'undefined' &&
+				typeof bank === 'undefined'
+			)
+				return;
 			return findNearestPoint();
 		}
-		if (typeof filteredAtmData === 'undefined' && typeof filteredConvenienceData === 'undefined')
+		if (
+			typeof filteredAtmData === 'undefined' &&
+			typeof filteredConvenienceData === 'undefined' &&
+			typeof filteredBankData === 'undefined'
+		)
 			return;
 		return findNearestPointWithQuery();
 	});
 
 	$effect(() => {
-		Promise.all([fetchAtmData(), fetchConvenienceData()]).then(() => {
+		Promise.all([fetchAtmData(), fetchConvenienceData(), fetchBankData()]).then(() => {
 			handleQuery('');
 			map?.loadImage(`${base}/icon-atm.png`).then((img) => {
 				map?.addImage('icon-atm', img.data, { sdf: true });
@@ -277,12 +329,8 @@
 
 	let map = $state<maplibregl.Map | undefined>(undefined);
 
-	let circleFromUserPosition: any = $derived.by(() => {
-		if (typeof userLocation === 'undefined')
-			return {
-				type: 'FeatureCollection',
-				features: []
-			};
+	let circleFromUserPosition = $derived.by(() => {
+		if (typeof userLocation === 'undefined') return undefined;
 		const p = point(userLocation);
 		const buffered = buffer(p, thresholdDistance);
 		return buffered;
@@ -301,7 +349,7 @@
 					locale: 'JP'
 				});
 				return oh.getState(targetDate);
-			} catch (error) {
+			} catch {
 				return false;
 			}
 		});
@@ -324,12 +372,9 @@
 		if (typeof feature.opening_hours === 'undefined' || feature.opening_hours === null) {
 			content = `<p class="text-gray-500">営業時間不明</p>`;
 		} else {
-			const location = userLocation ?? [coord.lng, coord.lat]
-			// @ts-ignore
+			const location = userLocation ?? [coord.lng, coord.lat];
 			const oh = new openingHours(feature.opening_hours, {
-				// @ts-ignore
 				lon: location[0],
-				// @ts-ignore
 				lat: location[1],
 				// @ts-ignore
 				address: { country_code: 'jp', country: '日本' }
@@ -411,21 +456,23 @@
 			ongeolocate={(e) => (userLocation = [e.coords.longitude, e.coords.latitude])}
 		/>
 		<DarkmodeControl />
-		<GeoJSONSource data={circleFromUserPosition}>
-			<FillLayer
-				paint={{
-					'fill-color': '#00bfff',
-					'fill-opacity': 0.5
-				}}
-			/>
-			<LineLayer
-				paint={{
-					'line-color': 'white',
-					'line-width': 2
-				}}
-			/>
-		</GeoJSONSource>
-		<GeoJSONSource data={filteredConvenienceData as any} cluster={true}>
+		{#if typeof circleFromUserPosition !== 'undefined'}
+			<GeoJSONSource data={circleFromUserPosition}>
+				<FillLayer
+					paint={{
+						'fill-color': '#00bfff',
+						'fill-opacity': 0.5
+					}}
+				/>
+				<LineLayer
+					paint={{
+						'line-color': 'white',
+						'line-width': 2
+					}}
+				/>
+			</GeoJSONSource>
+		{/if}
+		<GeoJSONSource data={filteredConvenienceData} cluster={true}>
 			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
@@ -455,7 +502,37 @@
 				}}
 			/>
 		</GeoJSONSource>
-		<GeoJSONSource data={filteredAtmData as any}>
+		<GeoJSONSource data={filteredBankData}>
+			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
+			<SymbolLayer
+				paint={{
+					...iconLayerCommonProperty.paint,
+					'icon-color': [
+						'case',
+						[
+							'in',
+							['get', 'feature_id'],
+							['literal', (nearPoint ?? []).map((val) => val.feature.feature_id)]
+						],
+						'red',
+						'#FFC300'
+					]
+				}}
+				layout={{
+					'icon-image': 'icon-atm',
+					...iconLayerCommonProperty.layout
+				}}
+			/>
+			<SymbolLayer
+				layout={{
+					...labelLayerCommonProperty.layout
+				}}
+				paint={{
+					...labelLayerCommonProperty.paint
+				}}
+			/>
+		</GeoJSONSource>
+		<GeoJSONSource data={filteredAtmData}>
 			<CircleLayer paint={{ ...circleLayerCommonProperty.paint }} onclick={circleLayerOnClick} />
 			<SymbolLayer
 				paint={{
@@ -487,9 +564,10 @@
 		</GeoJSONSource>
 
 		{#if popup !== null}
-			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}
-				>{@html popup.content}</Popup
-			>
+			<Popup lnglat={{ lng: popup.lng, lat: popup.lat }} onclose={() => (popup = null)}>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html popup.content}
+			</Popup>
 		{/if}
 	</MapLibre>
 </div>
@@ -499,8 +577,7 @@
 		id="q"
 		bind:value={query}
 		oninput={(e) => {
-			// @ts-ignore
-			handleQuery(e.target.value);
+			handleQuery(e.target?.value);
 		}}
 		placeholder="ここから絞り込み検索"
 		class="bg-neutral-500 p-2 rounded-full w-[17rem]"
@@ -553,7 +630,7 @@
 			id="near-threshold"
 			onchange={(e) => {
 				if (e.target !== null) {
-					// @ts-ignore
+					// @ts-expect-error
 					thresholdDistance = Number(e.target.value);
 				}
 			}}
