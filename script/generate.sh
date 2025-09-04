@@ -18,7 +18,7 @@ GEOPARQUET_FILE="$QUACKOSM_WORKDIR/$BASENAME.parquet"
 )
 
 mkdir -p "$QUACKOSM_WORKDIR"
-rye run quackosm \
+uv run quackosm \
     --osm-tags-filter '{"atm": true, "amenity": "atm", "shop": "convenience"}' \
     --keep-all-tags \
     --silent \
@@ -26,4 +26,4 @@ rye run quackosm \
     --work-dir "$QUACKOSM_WORKDIR" \
     "$PBF_FILE"
 
-rye run python src/atmjsongen/main.py --parquet "$GEOPARQUET_FILE" --geojson_dir .
+uv run src/atmjsongen/main.py --parquet "$GEOPARQUET_FILE" --geojson_dir .
