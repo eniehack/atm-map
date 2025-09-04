@@ -13,7 +13,7 @@ VAR_FILE="$WORKDIR/variable"
     echo "$PBF_FILE" > "$VAR_FILE"
     PBF_MD5_FILE="$PBF_FILE.md5"
     curl --output-dir "$WORKDIR" -O -sSL "$PBF_URL"
-    curl --output-dir "$WORKDIR" -O -sSL "$PBF_MD5_FILE"
+    curl --output-dir "$WORKDIR" -O -sSL "$PBF_URL.md5"
     if ! md5sum -c --quiet --status "$PBF_MD5_FILE"
     then
         echo "checksum not match"
