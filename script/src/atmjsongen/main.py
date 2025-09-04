@@ -65,10 +65,10 @@ if __name__ == "__main__":
     gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
     atm_gdf = gdf[gdf["atm"]]
     atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    atm_gdf.to_file(opt.geojson_dir / f"atm-{strftime("%Y%m%d")}.json", driver="GeoJSON")
+    atm_gdf.to_file(opt.geojson_dir / f"atm.json", driver="GeoJSON")
     bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
     bank_gdf = bank_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    bank_gdf.to_file(opt.geojson_dir / f"bank-{strftime("%Y%m%d")}.json", driver="GeoJSON")
+    bank_gdf.to_file(opt.geojson_dir / f"bank.json", driver="GeoJSON")
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
     convenience_gdf = convenience_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    convenience_gdf.to_file(opt.geojson_dir / f"convenience-{strftime("%Y%m%d")}.json", driver="GeoJSON")
+    convenience_gdf.to_file(opt.geojson_dir / f"convenience.json", driver="GeoJSON")

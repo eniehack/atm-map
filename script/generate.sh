@@ -2,14 +2,18 @@
 WORKDIR="$(mktemp -d)"
 BASENAME="japan_latest_$(date -I)"
 QUACKOSM_WORKDIR="$WORKDIR/qosm"
-PBF_FILE="$WORKDIR/japan-latest.osm.pbf"
 GEOPARQUET_FILE="$QUACKOSM_WORKDIR/$BASENAME.parquet"
+VAR_FILE="$WORKDIR/variable"
 
 (
-    PBF_MD5_FILE="$PBF_FILE.md5"
     cd "$WORKDIR" || exit
-    curl -o "$PBF_FILE" -sSL 'https://download.geofabrik.de/asia/japan-latest.osm.pbf'
-    curl -o "$PBF_MD5_FILE" -sSL 'https://download.geofabrik.de/asia/japan-latest.osm.pbf.md5'
+    PBF_URL="$(curl -sSL -w '%{url_effective}' -I -o /dev/null  https://download.geofabrik.de/asia/japan-latest.osm.pbf)"
+    PBF_BASENAME="$(basename "$PBF_URL")"
+    PBF_FILE="$WORKDIR/$PBF_BASENAME"
+    echo "$PBF_FILE" > "$VAR_FILE"
+    PBF_MD5_FILE="$PBF_FILE.md5"
+    curl --output-dir "$WORKDIR" -O -sSL "$PBF_URL"
+    curl --output-dir "$WORKDIR" -O -sSL "$PBF_MD5_FILE"
     if ! md5sum -c --quiet --status "$PBF_MD5_FILE"
     then
         echo "checksum not match"
@@ -18,7 +22,8 @@ GEOPARQUET_FILE="$QUACKOSM_WORKDIR/$BASENAME.parquet"
 )
 
 mkdir -p "$QUACKOSM_WORKDIR"
-rye run quackosm \
+PBF_FILE="$(cat "$VAR_FILE" | head -n1)"
+uv run -- quackosm \
     --osm-tags-filter '{"atm": true, "amenity": "atm", "shop": "convenience"}' \
     --keep-all-tags \
     --silent \
@@ -26,4 +31,4 @@ rye run quackosm \
     --work-dir "$QUACKOSM_WORKDIR" \
     "$PBF_FILE"
 
-rye run python src/atmjsongen/main.py --parquet "$GEOPARQUET_FILE" --geojson_dir .
+uv run src/atmjsongen/main.py --parquet "$GEOPARQUET_FILE" --geojson_dir .
