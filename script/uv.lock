@@ -6,16 +6,16 @@ name = "atmgeojsongen"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "classopt" },
     { name = "geopandas" },
     { name = "quackosm", extra = ["cli"] },
+    { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "classopt", specifier = ">=0.2.1" },
     { name = "geopandas", specifier = ">=1.0.1" },
     { name = "quackosm", extras = ["cli"], specifier = ">=0.12.1" },
+    { name = "typer", specifier = ">=0.17.3" },
 ]
 
 [[package]]
@@ -80,15 +80,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/8c/9839225320046ed279c6e839d51f028342eb77c91c89b8ef2549f951f3ec/charset_normalizer-3.4.3-cp314-cp314-win32.whl", hash = "sha256:c6dbd0ccdda3a2ba7c2ecd9d77b37f3b5831687d8dc1b6ca5f56a4880cc7b7ce", size = 100086 },
     { url = "https://files.pythonhosted.org/packages/ee/7a/36fbcf646e41f710ce0a563c1c9a343c6edf9be80786edeb15b6f62e17db/charset_normalizer-3.4.3-cp314-cp314-win_amd64.whl", hash = "sha256:73dc19b562516fc9bcf6e5d6e596df0b4eb98d87e4f79f3ae71840e6ed21361c", size = 107400 },
     { url = "https://files.pythonhosted.org/packages/8a/1f/f041989e93b001bc4e44bb1669ccdcf54d3f00e628229a85b08d330615c5/charset_normalizer-3.4.3-py3-none-any.whl", hash = "sha256:ce571ab16d890d23b5c278547ba694193a45011ff86a9162a71307ed9f86759a", size = 53175 },
-]
-
-[[package]]
-name = "classopt"
-version = "0.2.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c4/be/32acf247096c1a6a861cfc3c18ebafb6a8ba7f9cf6dccece6144f8634ec2/classopt-0.2.1.tar.gz", hash = "sha256:6c540b8fa6ef409a97dfe90fede83b4feaa6384f1e53a2fb241ca986d6137a32", size = 6107 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/5f/7852c431b850a453d203dc4f3c3f71f949075c9cb523f86927c7fb7d1cf4/classopt-0.2.1-py3-none-any.whl", hash = "sha256:26419443f3a8fee90e73bcff15f608998ae9ad754c61a8903c0713289826c2d4", size = 6825 },
 ]
 
 [[package]]

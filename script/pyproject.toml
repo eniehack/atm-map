@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "geopandas>=1.0.1",
     "quackosm[cli]>=0.12.1",
-    "classopt>=0.2.1",
+    "typer>=0.17.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

@@ -31,4 +31,4 @@ uv run -- quackosm \
     --work-dir "$QUACKOSM_WORKDIR" \
     "$PBF_FILE"
 
-uv run src/atmjsongen/main.py --parquet "$GEOPARQUET_FILE" --geojson_dir .
+uv run src/atmjsongen/main.py "$GEOPARQUET_FILE" 
