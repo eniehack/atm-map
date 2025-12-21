@@ -67,7 +67,7 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
     d["bank.json"] = bank_gdf
 
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
-    d["convenicence.json"] = convenience_gdf
+    d["convenience.json"] = convenience_gdf
 
     for filename, target_gdf in d.items():
         target_gdf = target_gdf[
