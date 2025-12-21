@@ -1,3 +1,4 @@
+import json
 from collections.abc import Callable
 from pathlib import Path
 
@@ -72,10 +73,10 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
         target_gdf = target_gdf[
             ["feature_id", "brand", "name", "opening_hours", "geometry"]
         ]
-        target_gdf.to_file(
-            geojson_dir / filename, driver="GeoJSON", separators=(",", ":")
-        )
-
+        geojson_str = target_gdf.to_json()
+        geojson_dict = json.loads(geojson_str)
+        with open(geojson_dir / filename, 'w', encoding='utf-8') as f:
+            json.dump(geojson_dict, f, separators=(",", ":"), ensure_ascii=False)
 
 if __name__ == "__main__":
     typer.run(main)
