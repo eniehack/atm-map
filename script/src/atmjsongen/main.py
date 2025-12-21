@@ -5,8 +5,8 @@ import geopandas
 import typer
 
 
-def get_sometag(target_tag: str) -> Callable[dict, str | None]:
-    def func(tags):
+def get_sometag(target_tag: str) -> Callable[[dict[str, str]], str | None]:
+    def func(tags: dict) -> str | None:
         if target_tag in tags:
             return tags[target_tag]
         else:
@@ -15,7 +15,7 @@ def get_sometag(target_tag: str) -> Callable[dict, str | None]:
     return func
 
 
-def is_atm(tags):
+def is_atm(tags: dict):
     if "amenity" in tags and tags["amenity"] == "atm":
         return True
     elif "atm" in tags and tags["atm"] == "yes":
@@ -24,20 +24,20 @@ def is_atm(tags):
         return False
 
 
-def is_bank(tags):
+def is_bank(tags: dict):
     if "amenity" in tags and tags["amenity"] == "bank":
         return True
     else:
         return False
 
 
-def is_convenience(tags):
+def is_convenience(tags: dict):
     if "shop" in tags and tags["shop"] == "convenience":
         return True
     return False
 
 
-def get_openinghours(tags):
+def get_openinghours(tags: dict):
     atm_opening = get_sometag("opening_hours:atm")(tags)
     if atm_opening is None:
         return get_sometag("opening_hours")(tags)
