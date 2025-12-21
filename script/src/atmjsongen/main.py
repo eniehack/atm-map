@@ -56,21 +56,23 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()):
     gdf.geometry = gdf.representative_point()
     gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
 
+    d: dict[str, geopandas.GeoDataFrame] = {}
     atm_gdf = gdf[gdf["atm"]]
-    atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    atm_gdf.to_file(geojson_dir / "atm.json", driver="GeoJSON", separator=(",", ":"))
+    d["atm.json"] = atm_gdf
 
     bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
-    bank_gdf = bank_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    bank_gdf.to_file(geojson_dir / "bank.json", driver="GeoJSON", separator=(",", ":"))
+    d["bank.json"] = bank_gdf
 
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
-    convenience_gdf = convenience_gdf[
-        ["feature_id", "brand", "name", "opening_hours", "geometry"]
-    ]
-    convenience_gdf.to_file(
-        geojson_dir / "convenience.json", driver="GeoJSON", separator=(",", ":")
-    )
+    d["convenicence.json"] = convenience_gdf
+
+    for filename, target_gdf in d.items():
+        target_gdf = target_gdf[
+            ["feature_id", "brand", "name", "opening_hours", "geometry"]
+        ]
+        target_gdf.to_file(
+            geojson_dir / filename, driver="GeoJSON", separators=(",", ":")
+        )
 
 
 if __name__ == "__main__":
