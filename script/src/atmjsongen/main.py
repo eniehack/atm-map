@@ -1,5 +1,6 @@
-from typing import Callable
+from collections.abc import Callable
 from pathlib import Path
+
 import geopandas
 import typer
 
@@ -43,9 +44,10 @@ def get_openinghours(tags):
     return atm_opening
 
 
-def main(parquet: Path, geojson_dir: Path = Path.cwd()):
+def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
     gdf = geopandas.read_parquet(parquet)
-    gdf["tags"] = gdf["tags"].apply(lambda l: {i[0]: i[1] for i in l})
+    # タグはlist[tuple]の構造になっているので使いやすいようにdictに変換する
+    gdf["tags"] = gdf["tags"].apply(lambda lst: {i[0]: i[1] for i in lst})
     gdf["brand"] = gdf["tags"].apply(get_sometag("brand"))
     gdf["name"] = gdf["tags"].apply(get_sometag("name"))
     gdf["atm"] = gdf["tags"].apply(is_atm)
