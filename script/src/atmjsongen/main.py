@@ -1,11 +1,13 @@
-from typing import Callable
+import json
+from collections.abc import Callable
 from pathlib import Path
+
 import geopandas
 import typer
 
 
-def get_sometag(target_tag: str) -> Callable[dict, str | None]:
-    def func(tags):
+def get_sometag(target_tag: str) -> Callable[[dict[str, str]], str | None]:
+    def func(tags: dict) -> str | None:
         if target_tag in tags:
             return tags[target_tag]
         else:
@@ -14,7 +16,7 @@ def get_sometag(target_tag: str) -> Callable[dict, str | None]:
     return func
 
 
-def is_atm(tags):
+def is_atm(tags: dict):
     if "amenity" in tags and tags["amenity"] == "atm":
         return True
     elif "atm" in tags and tags["atm"] == "yes":
@@ -23,29 +25,30 @@ def is_atm(tags):
         return False
 
 
-def is_bank(tags):
+def is_bank(tags: dict):
     if "amenity" in tags and tags["amenity"] == "bank":
         return True
     else:
         return False
 
 
-def is_convenience(tags):
+def is_convenience(tags: dict):
     if "shop" in tags and tags["shop"] == "convenience":
         return True
     return False
 
 
-def get_openinghours(tags):
+def get_openinghours(tags: dict):
     atm_opening = get_sometag("opening_hours:atm")(tags)
     if atm_opening is None:
         return get_sometag("opening_hours")(tags)
     return atm_opening
 
 
-def main(parquet: Path, geojson_dir: Path = Path.cwd()):
+def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
     gdf = geopandas.read_parquet(parquet)
-    gdf["tags"] = gdf["tags"].apply(lambda l: {i[0]: i[1] for i in l})
+    # タグはlist[tuple]の構造になっているので使いやすいようにdictに変換する
+    gdf["tags"] = gdf["tags"].apply(lambda lst: {i[0]: i[1] for i in lst})
     gdf["brand"] = gdf["tags"].apply(get_sometag("brand"))
     gdf["name"] = gdf["tags"].apply(get_sometag("name"))
     gdf["atm"] = gdf["tags"].apply(is_atm)
@@ -56,22 +59,24 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()):
     gdf.geometry = gdf.representative_point()
     gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
 
+    d: dict[str, geopandas.GeoDataFrame] = {}
     atm_gdf = gdf[gdf["atm"]]
-    atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    atm_gdf.to_file(geojson_dir / "atm.json", driver="GeoJSON", separator=(",", ":"))
+    d["atm.json"] = atm_gdf
 
     bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
-    bank_gdf = bank_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    bank_gdf.to_file(geojson_dir / "bank.json", driver="GeoJSON", separator=(",", ":"))
+    d["bank.json"] = bank_gdf
 
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
-    convenience_gdf = convenience_gdf[
-        ["feature_id", "brand", "name", "opening_hours", "geometry"]
-    ]
-    convenience_gdf.to_file(
-        geojson_dir / "convenience.json", driver="GeoJSON", separator=(",", ":")
-    )
+    d["convenience.json"] = convenience_gdf
 
+    for filename, target_gdf in d.items():
+        target_gdf = target_gdf[
+            ["feature_id", "brand", "name", "opening_hours", "geometry"]
+        ]
+        geojson_str = target_gdf.to_json()
+        geojson_dict = json.loads(geojson_str)
+        with open(geojson_dir / filename, 'w', encoding='utf-8') as f:
+            json.dump(geojson_dict, f, separators=(",", ":"), ensure_ascii=False)
 
 if __name__ == "__main__":
     typer.run(main)
