@@ -1,4 +1,3 @@
-import quackosm as qosm
 from typing import Callable
 from pathlib import Path
 import geopandas
@@ -11,7 +10,9 @@ def get_sometag(target_tag: str) -> Callable[dict, str | None]:
             return tags[target_tag]
         else:
             return None
+
     return func
+
 
 def is_atm(tags):
     if "amenity" in tags and tags["amenity"] == "atm":
@@ -21,22 +22,26 @@ def is_atm(tags):
     else:
         return False
 
+
 def is_bank(tags):
     if "amenity" in tags and tags["amenity"] == "bank":
         return True
     else:
         return False
 
+
 def is_convenience(tags):
     if "shop" in tags and tags["shop"] == "convenience":
         return True
     return False
+
 
 def get_openinghours(tags):
     atm_opening = get_sometag("opening_hours:atm")(tags)
     if atm_opening is None:
         return get_sometag("opening_hours")(tags)
     return atm_opening
+
 
 def main(parquet: Path, geojson_dir: Path = Path.cwd()):
     gdf = geopandas.read_parquet(parquet)
@@ -53,15 +58,20 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()):
 
     atm_gdf = gdf[gdf["atm"]]
     atm_gdf = atm_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    atm_gdf.to_file(geojson_dir / f"atm.json", driver="GeoJSON", separator=(",", ":"))
+    atm_gdf.to_file(geojson_dir / "atm.json", driver="GeoJSON", separator=(",", ":"))
 
     bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
     bank_gdf = bank_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    bank_gdf.to_file(geojson_dir / f"bank.json", driver="GeoJSON", separator=(",", ":"))
+    bank_gdf.to_file(geojson_dir / "bank.json", driver="GeoJSON", separator=(",", ":"))
 
     convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
-    convenience_gdf = convenience_gdf[["feature_id", "brand", "name", "opening_hours", "geometry"]]
-    convenience_gdf.to_file(geojson_dir / f"convenience.json", driver="GeoJSON", separator=(",", ":"))
+    convenience_gdf = convenience_gdf[
+        ["feature_id", "brand", "name", "opening_hours", "geometry"]
+    ]
+    convenience_gdf.to_file(
+        geojson_dir / "convenience.json", driver="GeoJSON", separator=(",", ":")
+    )
+
 
 if __name__ == "__main__":
     typer.run(main)
