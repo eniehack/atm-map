@@ -25,18 +25,18 @@ jobs:
       - name: install python
         working-directory: script
         run: uv python install
-    
+
       - name: install dependencies
         working-directory: script
         run: uv sync --locked
-    
+
       - name: generate data
         working-directory: script
         run: |
-            ./generate.sh
-            for f in *.json; do
-                mv "$f" ../static/
-            done
+          ./generate.sh
+          for f in *.json; do
+              mv "$f" ../static/
+          done
 
       - name: get current year, month for branch name
         id: date
@@ -44,8 +44,8 @@ jobs:
 
       - uses: peter-evans/create-pull-request@v8
         with:
-          commit-message: "chore: updated geojson files (${{ steps.date.outputs.date }})"
-          title: "update ${{ steps.date.outputs.date }}"
-          branch: "feat/${{ steps.date.outputs.date }}-update"
+          commit-message: 'chore: updated geojson files (${{ steps.date.outputs.date }})'
+          title: 'update ${{ steps.date.outputs.date }}'
+          branch: 'feat/${{ steps.date.outputs.date }}-update'
           add-paths: |
             static/*.json
