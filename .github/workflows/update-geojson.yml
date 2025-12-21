@@ -40,7 +40,7 @@ jobs:
 
       - name: get current year, month for branch name
         id: date
-        run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - uses: peter-evans/create-pull-request@v8
         with:
