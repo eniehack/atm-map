@@ -27,7 +27,7 @@
 		"@types/geojson": "^7946.0.16",
 		"es-toolkit": "^1.44.0",
 		"eslint": "^9.34.0",
-		"eslint-config-prettier": "^9.1.2",
+		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^2.46.1",
 		"fuse.js": "^7.1.0",
 		"globals": "^15.15.0",
