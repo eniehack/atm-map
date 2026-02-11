@@ -8,7 +8,6 @@ updates:
       prefix: 'deps'
     labels:
       - 'dependencies'
-      - 'npm'
     open-pull-requests-limit: 5
     groups:
       patch-updates:
