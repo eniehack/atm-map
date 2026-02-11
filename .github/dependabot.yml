@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: 'deps'
+      prefix: 'deps(npm)'
     labels:
       - 'dependencies'
     open-pull-requests-limit: 5
@@ -17,8 +17,8 @@ updates:
           - 'patch'
         exclude-patterns:
           - 'globals'
-          - 'eslint*'
-          - 'prettier'
+          - '*eslint*'
+          - '*prettier*'
           - '@types/*'
 
       minor-updates:
@@ -28,14 +28,14 @@ updates:
           - 'minor'
         exclude-patterns:
           - 'globals'
-          - 'eslint*'
-          - 'prettier*'
+          - '*eslint*'
+          - '*prettier*'
           - '@types/*'
 
       dev-tools:
         patterns:
           - 'globals'
-          - 'prettier*'
+          - '*prettier*'
           - '*eslint*'
           - '@types/*'
         update-types:
@@ -50,3 +50,12 @@ updates:
       prefix: 'ci'
     labels:
       - 'dependencies'
+
+  - package-ecosystem: 'uv'
+    directory: './scripts/'
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+    commit-message:
+      prefix: 'deps(uv)'
