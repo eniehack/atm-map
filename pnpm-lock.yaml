@@ -10,10 +10,10 @@ importers:
     devDependencies:
       '@sveltejs/adapter-cloudflare':
         specifier: ^7.2.3
-        version: 7.2.6(@sveltejs/kit@2.50.2(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2)))(wrangler@4.34.0(@cloudflare/workers-types@4.20260207.0))
+        version: 7.2.6(@sveltejs/kit@2.52.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2)))(wrangler@4.34.0(@cloudflare/workers-types@4.20260207.0))
       '@sveltejs/kit':
-        specifier: ^2.50.2
-        version: 2.50.2(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))
+        specifier: ^2.52.0
+        version: 2.52.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^4.0.4
         version: 4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2))
@@ -793,8 +793,8 @@ packages:
     peerDependencies:
       acorn: ^8.9.0
 
-  '@sveltejs/acorn-typescript@1.0.8':
-    resolution: {integrity: sha512-esgN+54+q0NjB0Y/4BomT9samII7jGwNy/2a3wNZbT2A2RpmXsXwUt24LvLhx6jUq2gVk4cWEvcRO6MFQbOfNA==}
+  '@sveltejs/acorn-typescript@1.0.9':
+    resolution: {integrity: sha512-lVJX6qEgs/4DOcRTpo56tmKzVPtoWAaVbL4hfO7t7NVwl9AAXzQR6cihesW1BmNMPl+bK6dreu2sOKBP2Q9CIA==}
     peerDependencies:
       acorn: ^8.9.0
 
@@ -804,8 +804,8 @@ packages:
       '@sveltejs/kit': ^2.0.0
       wrangler: ^4.0.0
 
-  '@sveltejs/kit@2.50.2':
-    resolution: {integrity: sha512-875hTUkEbz+MyJIxWbQjfMaekqdmEKUUfR7JyKcpfMRZqcGyrO9Gd+iS1D/Dx8LpE5FEtutWGOtlAh4ReSAiOA==}
+  '@sveltejs/kit@2.52.0':
+    resolution: {integrity: sha512-zG+HmJuSF7eC0e7xt2htlOcEMAdEtlVdb7+gAr+ef08EhtwUsjLxcAwBgUCJY3/5p08OVOxVZti91WfXeuLvsg==}
     engines: {node: '>=18.13'}
     hasBin: true
     peerDependencies:
@@ -1904,8 +1904,8 @@ packages:
   ufo@1.6.3:
     resolution: {integrity: sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q==}
 
-  undici@7.21.0:
-    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
+  undici@7.22.0:
+    resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.20:
@@ -2494,21 +2494,21 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/acorn-typescript@1.0.8(acorn@8.15.0)':
+  '@sveltejs/acorn-typescript@1.0.9(acorn@8.15.0)':
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-cloudflare@7.2.6(@sveltejs/kit@2.50.2(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2)))(wrangler@4.34.0(@cloudflare/workers-types@4.20260207.0))':
+  '@sveltejs/adapter-cloudflare@7.2.6(@sveltejs/kit@2.52.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2)))(wrangler@4.34.0(@cloudflare/workers-types@4.20260207.0))':
     dependencies:
       '@cloudflare/workers-types': 4.20260207.0
-      '@sveltejs/kit': 2.50.2(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))
+      '@sveltejs/kit': 2.52.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))
       worktop: 0.8.0-next.18
       wrangler: 4.34.0(@cloudflare/workers-types@4.20260207.0)
 
-  '@sveltejs/kit@2.50.2(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))':
+  '@sveltejs/kit@2.52.0(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2)))(svelte@5.38.6)(typescript@5.9.3)(vite@5.4.19(lightningcss@1.30.2))':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      '@sveltejs/acorn-typescript': 1.0.8(acorn@8.15.0)
+      '@sveltejs/acorn-typescript': 1.0.9(acorn@8.15.0)
       '@sveltejs/vite-plugin-svelte': 4.0.4(svelte@5.38.6)(vite@5.4.19(lightningcss@1.30.2))
       '@types/cookie': 0.6.0
       acorn: 8.15.0
@@ -3353,7 +3353,7 @@ snapshots:
       glob-to-regexp: 0.4.1
       sharp: 0.33.5
       stoppable: 1.1.0
-      undici: 7.21.0
+      undici: 7.22.0
       workerd: 1.20250902.0
       ws: 8.18.0
       youch: 4.1.0-beta.10
@@ -3682,7 +3682,7 @@ snapshots:
 
   ufo@1.6.3: {}
 
-  undici@7.21.0: {}
+  undici@7.22.0: {}
 
   unenv@2.0.0-rc.20:
     dependencies:
