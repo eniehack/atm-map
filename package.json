@@ -20,7 +20,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.4",
-		"@turf/buffer": "^7.2.0",
+		"@turf/buffer": "^7.3.4",
 		"@turf/distance": "^7.3.5",
 		"@turf/helpers": "^7.2.0",
 		"@types/eslint": "^9.6.1",
