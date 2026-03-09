@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
     commit-message:
       prefix: 'deps(npm)'
     labels:
@@ -52,9 +52,9 @@ updates:
       - 'dependencies'
 
   - package-ecosystem: 'uv'
-    directory: './scripts/'
+    directory: './script/'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
     labels:
       - 'dependencies'
     commit-message:
