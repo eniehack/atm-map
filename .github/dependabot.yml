@@ -52,7 +52,7 @@ updates:
       - 'dependencies'
 
   - package-ecosystem: 'uv'
-    directory: './scripts/'
+    directory: './script/'
     schedule:
       interval: 'weekly'
     labels:
