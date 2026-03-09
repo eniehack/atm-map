@@ -36,7 +36,7 @@
 		"pmtiles": "^4.4.0",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.0",
-		"svelte": "^5.53.6",
+		"svelte": "^5.53.7",
 		"svelte-check": "^4.4.5",
 		"svelte-maplibre-gl": "^1.0.3",
 		"tailwindcss": "^4.1.18",
