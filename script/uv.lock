@@ -208,7 +208,7 @@ wheels = [
 
 [[package]]
 name = "geopandas"
-version = "1.1.1"
+version = "1.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -218,9 +218,9 @@ dependencies = [
     { name = "pyproj" },
     { name = "shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8c/76/e1960ba846f153ab109575242abf89dc98f8e057faa32f3decf4cce9247a/geopandas-1.1.1.tar.gz", hash = "sha256:1745713f64d095c43e72e08e753dbd271678254b24f2e01db8cdb8debe1d293d", size = 332655 }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/24/5eb5685d7bf89d64218919379f882d19a60f8219d66d833c83b1cf264c95/geopandas-1.1.2.tar.gz", hash = "sha256:33f7b33565c46a45b8459a2ab699ec943fdbb5716e58e251b3c413cf7783106c", size = 336037 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/70/d5cd0696eff08e62fdbdebe5b46527facb4e7220eabe0ac6225efab50168/geopandas-1.1.1-py3-none-any.whl", hash = "sha256:589e61aaf39b19828843df16cb90234e72897e2579be236f10eee0d052ad98e8", size = 338365 },
+    { url = "https://files.pythonhosted.org/packages/54/e4/fac19dc34cb686c96011388b813ff7b858a70681e5ce6ce7698e5021b0f4/geopandas-1.1.2-py3-none-any.whl", hash = "sha256:2bb0b1052cb47378addb4ba54c47f8d4642dcbda9b61375638274f49d9f0bb0d", size = 341734 },
 ]
 
 [[package]]
@@ -551,7 +551,7 @@ wheels = [
 
 [[package]]
 name = "quackosm"
-version = "0.16.2"
+version = "0.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -570,9 +570,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typeguard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/15/3e2a7067da2e6d76e9be3aed1669eeb353219e60a31eba4b3c17ab7c755a/quackosm-0.16.2.tar.gz", hash = "sha256:8f54de418e6184ae02f01277f52c90e7aa56df397261c5783fa33781980b6a11", size = 2245355 }
+sdist = { url = "https://files.pythonhosted.org/packages/74/c0/10b8f687855c123da707f297cc3930b1f8d93661d801f532ceb3422bc638/quackosm-0.17.0.tar.gz", hash = "sha256:0133f8fe556b2873c37eca7d9b816b7380bd6493ed6875fbdedf0a08f03ef6ea", size = 2246878 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/68/9d52fd23758211e57f7062f23e4c595d4fe157a3b8c06159247c7d97c756/quackosm-0.16.2-py3-none-any.whl", hash = "sha256:05ba7d459c9bbf2aca8ed94b266b337d696c1bc31fc42982645ad0dfd990adfb", size = 92405 },
+    { url = "https://files.pythonhosted.org/packages/9e/06/e76ed84a4b5269a37ac60c22fc9c8fe6a1e4294495c4bc5c4db88c470c3d/quackosm-0.17.0-py3-none-any.whl", hash = "sha256:d90d293a3ade9bb604bb914b711c262635b384dfb8ba0c3d3a99763fe1b370cf", size = 94123 },
 ]
 
 [package.optional-dependencies]
@@ -611,7 +611,7 @@ wheels = [
 
 [[package]]
 name = "rq-geo-toolkit"
-version = "2025.8.7"
+version = "2026.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "duckdb" },
@@ -623,9 +623,9 @@ dependencies = [
     { name = "rich" },
     { name = "shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e7/fd/f2507008a9bb7ae76539e349b269decacf03788328ab9c1bd105ffb824fa/rq_geo_toolkit-2025.8.7.tar.gz", hash = "sha256:5c79a506df85e88752369440f2400549b765320cff8455c1dc392e92b469a482", size = 1508794 }
+sdist = { url = "https://files.pythonhosted.org/packages/20/18/2d83fb79f490378d8000c6a6389d7e61f416f91e40aeda33e4328823c90c/rq_geo_toolkit-2026.2.1.tar.gz", hash = "sha256:120912ab0bffaed1fa7c3ed8882505fe270a0dec8bd73186487c08a5df8a3657", size = 1510847 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/ff/4f3efef13c48ee1ca335107735e854c591138c85a016dbf5b7837139da6a/rq_geo_toolkit-2025.8.7-py3-none-any.whl", hash = "sha256:8ab43720a1940e34dd6f862b21809f31fe29f9af09d7efcc3c35f12485b8addb", size = 14080 },
+    { url = "https://files.pythonhosted.org/packages/b8/4a/e6f39725e6f2b06e2228f0a5be7d9d85ab36b09fea18b34ae62f5a1a2aed/rq_geo_toolkit-2026.2.1-py3-none-any.whl", hash = "sha256:26dad7f34e9c7279dd771a74cc37b8e21146f5c54aaf0eeb10788e8b5212cd2d", size = 15143 },
 ]
 
 [[package]]
@@ -787,9 +787,9 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185 }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795 },
+    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584 },
 ]
