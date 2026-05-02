@@ -29,7 +29,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "geopandas", specifier = ">=1.0.1" },
-    { name = "quackosm", extras = ["cli"], specifier = ">=0.12.1" },
+    { name = "quackosm", extras = ["cli"], specifier = ">=0.17.1" },
     { name = "typer", specifier = ">=0.25.1" },
 ]
 
@@ -561,7 +561,7 @@ wheels = [
 
 [[package]]
 name = "quackosm"
-version = "0.17.0"
+version = "0.17.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -580,9 +580,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typeguard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/c0/10b8f687855c123da707f297cc3930b1f8d93661d801f532ceb3422bc638/quackosm-0.17.0.tar.gz", hash = "sha256:0133f8fe556b2873c37eca7d9b816b7380bd6493ed6875fbdedf0a08f03ef6ea", size = 2246878, upload-time = "2026-02-13T18:33:28.889Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/cf/b0e63f6357205062696656e7c724f5929354a8d2194aab37fa1157369451/quackosm-0.17.1.tar.gz", hash = "sha256:9d34bb1edd23f09f44d45c73bfb12c75898629d9ef91c4042674ce1e9748ef23", size = 2247028, upload-time = "2026-04-17T11:30:11.195Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/06/e76ed84a4b5269a37ac60c22fc9c8fe6a1e4294495c4bc5c4db88c470c3d/quackosm-0.17.0-py3-none-any.whl", hash = "sha256:d90d293a3ade9bb604bb914b711c262635b384dfb8ba0c3d3a99763fe1b370cf", size = 94123, upload-time = "2026-02-13T18:33:27.764Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/18/6e2ddc43f747d5136d934115276ed8ec8b5450cb400e9d870922a273fe51/quackosm-0.17.1-py3-none-any.whl", hash = "sha256:ba83aa701045d79ef826e08808b5ce5e4c3b8db44e7481d77564f3c52df3b5b4", size = 94188, upload-time = "2026-04-17T11:30:09.629Z" },
 ]
 
 [package.optional-dependencies]
