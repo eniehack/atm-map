@@ -48,7 +48,7 @@ def get_openinghours(tags: dict):
 
 def extract_tags(row: list):
     tags = dict(row)
-    typ: str
+    typ: str | None = None
     if is_atm(tags):
         typ = "atm"
     elif is_bank(tags):
