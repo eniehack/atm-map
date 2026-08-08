@@ -3,6 +3,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import geopandas
+import pandas
 import typer
 
 
@@ -45,29 +46,41 @@ def get_openinghours(tags: dict):
     return atm_opening
 
 
-def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
-    gdf = geopandas.read_parquet(parquet)
-    # タグはlist[tuple]の構造になっているので使いやすいようにdictに変換する
-    gdf["tags"] = gdf["tags"].apply(lambda lst: {i[0]: i[1] for i in lst})
-    gdf["brand"] = gdf["tags"].apply(get_sometag("brand"))
-    gdf["name"] = gdf["tags"].apply(get_sometag("name"))
-    gdf["atm"] = gdf["tags"].apply(is_atm)
-    gdf["bank"] = gdf["tags"].apply(is_bank)
-    gdf["convenience"] = gdf["tags"].apply(is_convenience)
-    gdf["opening_hours"] = gdf["tags"].apply(get_openinghours)
+def extract_tags(row: list):
+    tags = dict(row)
+    typ: str
+    if is_atm(tags):
+        typ = "atm"
+    elif is_bank(tags):
+        typ = "bank"
+    elif is_convenience(tags):
+        typ = "convenience"
+    return pandas.Series(
+        {
+            "brand": get_sometag("brand")(tags),
+            "name": get_sometag("name")(tags),
+            "type": typ,
+            "opening_hours": get_openinghours(tags),
+        }
+    )
 
-    gdf.geometry = gdf.representative_point()
-    gdf.geometry = gdf.geometry.set_precision(grid_size=0.0000001)
+
+def main(parquet: Path, geojson_dir: Path = Path.cwd()):  # noqa: B008
+    gdf = geopandas.read_parquet(parquet)
+    gdf[
+        [
+            "brand",
+            "name",
+            "type",
+            "opening_hours",
+        ]
+    ] = gdf["tags"].apply(extract_tags)
+
+    gdf.geometry = gdf.representative_point().set_precision(grid_size=0.0000001)
 
     d: dict[str, geopandas.GeoDataFrame] = {}
-    atm_gdf = gdf[gdf["atm"]]
-    d["atm.json"] = atm_gdf
-
-    bank_gdf = gdf[gdf["bank"] & ~gdf["atm"]]
-    d["bank.json"] = bank_gdf
-
-    convenience_gdf = gdf[gdf["convenience"] & ~gdf["atm"]]
-    d["convenience.json"] = convenience_gdf
+    for typ in ("atm", "bank", "convenience"):
+        d[f"{typ}.json"] = gdf[gdf["type"] == typ]
 
     for filename, target_gdf in d.items():
         target_gdf = target_gdf[
@@ -75,8 +88,9 @@ def main(parquet: Path, geojson_dir: Path = Path.cwd()): # noqa: B008
         ]
         geojson_str = target_gdf.to_json()
         geojson_dict = json.loads(geojson_str)
-        with open(geojson_dir / filename, 'w', encoding='utf-8') as f:
+        with open(geojson_dir / filename, "w", encoding="utf-8") as f:
             json.dump(geojson_dict, f, separators=(",", ":"), ensure_ascii=False)
+
 
 if __name__ == "__main__":
     typer.run(main)
