@@ -15,10 +15,10 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-cloudflare": "^7.2.8",
+		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/kit": "^2.53.4",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.2.4",
 		"@turf/buffer": "^7.3.4",
 		"@turf/distance": "^7.3.5",
