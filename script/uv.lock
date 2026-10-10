@@ -12,6 +12,15 @@ wheels = [
 ]
 
 [[package]]
+name = "anyascii"
+version = "0.3.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/ba/edebda727008390936da4a9bf677c19cd63b32d51e864656d2cbd1028e25/anyascii-0.3.3.tar.gz", hash = "sha256:c94e9dd9d47b3d9494eca305fef9447d00b4bf1a32aff85aa746fa3ec7fb95c3", size = 264680, upload-time = "2025-06-29T03:33:30.427Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/76/783b75a21ce3563b8709050de030ae253853b147bd52e141edc1025aa268/anyascii-0.3.3-py3-none-any.whl", hash = "sha256:f5ab5e53c8781a36b5a40e1296a0eeda2f48c649ef10c3921c1381b1d00dee7a", size = 345090, upload-time = "2025-06-29T03:33:28.356Z" },
+]
+
+[[package]]
 name = "atmgeojsongen"
 version = "0.1.0"
 source = { editable = "." }
@@ -29,7 +38,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "geopandas", specifier = ">=1.1.4" },
-    { name = "quackosm", extras = ["cli"], specifier = ">=0.17.1" },
+    { name = "quackosm", extras = ["cli"], specifier = ">=0.18.1" },
     { name = "typer", specifier = ">=0.27.1" },
 ]
 
@@ -98,6 +107,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/8c/9839225320046ed279c6e839d51f028342eb77c91c89b8ef2549f951f3ec/charset_normalizer-3.4.3-cp314-cp314-win32.whl", hash = "sha256:c6dbd0ccdda3a2ba7c2ecd9d77b37f3b5831687d8dc1b6ca5f56a4880cc7b7ce", size = 100086, upload-time = "2025-08-09T07:56:52.722Z" },
     { url = "https://files.pythonhosted.org/packages/ee/7a/36fbcf646e41f710ce0a563c1c9a343c6edf9be80786edeb15b6f62e17db/charset_normalizer-3.4.3-cp314-cp314-win_amd64.whl", hash = "sha256:73dc19b562516fc9bcf6e5d6e596df0b4eb98d87e4f79f3ae71840e6ed21361c", size = 107400, upload-time = "2025-08-09T07:56:55.172Z" },
     { url = "https://files.pythonhosted.org/packages/8a/1f/f041989e93b001bc4e44bb1669ccdcf54d3f00e628229a85b08d330615c5/charset_normalizer-3.4.3-py3-none-any.whl", hash = "sha256:ce571ab16d890d23b5c278547ba694193a45011ff86a9162a71307ed9f86759a", size = 53175, upload-time = "2025-08-09T07:57:26.864Z" },
+]
+
+[[package]]
+name = "click"
+version = "8.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fb/e2/79c688af8b210d232694e31e59da9f6ec747bae31c3f5946e4e9b98860d5/click-8.4.2-py3-none-any.whl", hash = "sha256:e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76", size = 119243, upload-time = "2026-06-24T17:45:13.73Z" },
 ]
 
 [[package]]
@@ -549,9 +570,10 @@ wheels = [
 
 [[package]]
 name = "quackosm"
-version = "0.17.1"
+version = "0.18.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "anyascii" },
     { name = "beautifulsoup4" },
     { name = "duckdb" },
     { name = "geoarrow-pyarrow" },
@@ -568,13 +590,14 @@ dependencies = [
     { name = "tqdm" },
     { name = "typeguard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/cf/b0e63f6357205062696656e7c724f5929354a8d2194aab37fa1157369451/quackosm-0.17.1.tar.gz", hash = "sha256:9d34bb1edd23f09f44d45c73bfb12c75898629d9ef91c4042674ce1e9748ef23", size = 2247028, upload-time = "2026-04-17T11:30:11.195Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/55/a8/0164d61b2656fbc4030224b67b4a17c55c3649f0d68685f00f9865b44cd9/quackosm-0.18.1.tar.gz", hash = "sha256:d82dfae34e94f368398750246c1dd320f48e76b6c6e379f8e334958c06633958", size = 2270283, upload-time = "2026-07-23T12:01:09.605Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/18/6e2ddc43f747d5136d934115276ed8ec8b5450cb400e9d870922a273fe51/quackosm-0.17.1-py3-none-any.whl", hash = "sha256:ba83aa701045d79ef826e08808b5ce5e4c3b8db44e7481d77564f3c52df3b5b4", size = 94188, upload-time = "2026-04-17T11:30:09.629Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/22/27c43f610221bb01a83b6ce302016ad23be0e49736978999277cace30570/quackosm-0.18.1-py3-none-any.whl", hash = "sha256:2d064562a5ec74a647e8e213eab705d778e164e717f8a0e4f925b78ad203f553", size = 110179, upload-time = "2026-07-23T12:01:08.105Z" },
 ]
 
 [package.optional-dependencies]
 cli = [
+    { name = "click" },
     { name = "s2sphere" },
     { name = "typer" },
 ]
@@ -609,7 +632,7 @@ wheels = [
 
 [[package]]
 name = "rq-geo-toolkit"
-version = "2026.2.1"
+version = "2026.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "duckdb" },
@@ -621,9 +644,9 @@ dependencies = [
     { name = "rich" },
     { name = "shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/20/18/2d83fb79f490378d8000c6a6389d7e61f416f91e40aeda33e4328823c90c/rq_geo_toolkit-2026.2.1.tar.gz", hash = "sha256:120912ab0bffaed1fa7c3ed8882505fe270a0dec8bd73186487c08a5df8a3657", size = 1510847, upload-time = "2026-02-08T15:45:01.094Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/ca/de012fe377f745f245d0bc5ce015c0adfe86e1ad4bb5d7de09aa4ad3a73f/rq_geo_toolkit-2026.6.0.tar.gz", hash = "sha256:1577b71321e6fd5c1bd4083436cc92ed89f548a33846002b292679045b8e1d8c", size = 1513088, upload-time = "2026-06-17T03:07:15.633Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/4a/e6f39725e6f2b06e2228f0a5be7d9d85ab36b09fea18b34ae62f5a1a2aed/rq_geo_toolkit-2026.2.1-py3-none-any.whl", hash = "sha256:26dad7f34e9c7279dd771a74cc37b8e21146f5c54aaf0eeb10788e8b5212cd2d", size = 15143, upload-time = "2026-02-08T15:44:59.777Z" },
+    { url = "https://files.pythonhosted.org/packages/54/ee/44f5d8db53f15221d2e7ed991f1f2b9b3f23d639ab112dd40390a087ff7c/rq_geo_toolkit-2026.6.0-py3-none-any.whl", hash = "sha256:85389462d220e217b7eed65c3dc363bc83d6bec718da4f8df92e872c638f4c70", size = 16200, upload-time = "2026-06-17T03:07:14.38Z" },
 ]
 
 [[package]]
